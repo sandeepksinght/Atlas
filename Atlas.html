@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+	<head>
+		<meta charset="utf-8">
+		<title></title>
+	</head>
+
+<h1>Welcome to Atlas!</h1>
+
+
+	<body>
+		<script>!function(){
+			let e=document.createElement("script"),
+			t=document.head||document.getElementsByTagName("head")[0];
+			e.src=
+			"https://cdn.jsdelivr.net/npm/rasa-webchat@1.x.x/lib/index.js",
+			e.async=!0,e.onload=(()=>{
+				window.WebChat.default(
+					{
+						initPayload: "/get_started",
+						title: "Atlas",
+						subtitle:"Let's go!",
+						inputTextFieldHint: "Your response here...",
+						fullScreenMode: true,
+   						 showFullScreenButton: true,
+							profileAvatar: "C:/Users/sande/OneDrive/Desktop/fiverr/boticon.png",
+						customData:{
+							current_url:window.location.href},socketUrl:"http://172.105.54.31:5005"},null)
+							}),
+							t.insertBefore(e,t.firstChild)}();
+							//window.onload = WebChat.open;
+							localStorage.removeItem("chat_session");
+						
+							</script>
+	</body>
+</html>
