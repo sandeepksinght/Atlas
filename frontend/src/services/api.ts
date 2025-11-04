@@ -87,4 +87,43 @@ export const getJob = (id: string) => api.get(`/api/jobs/${id}`);
 
 export const getUserJobs = () => api.get('/api/jobs');
 
+// Projects
+export const getProjects = () => api.get('/api/projects');
+
+export const getProjectTree = () => api.get('/api/projects/tree');
+
+export const getProject = (id: string) => api.get(`/api/projects/${id}`);
+
+export const createProject = (data: any) => api.post('/api/projects', data);
+
+export const updateProject = (id: string, data: any) => api.put(`/api/projects/${id}`, data);
+
+export const deleteProject = (id: string) => api.delete(`/api/projects/${id}`);
+
+export const archiveProject = (id: string) => api.post(`/api/projects/${id}/archive`);
+
+export const toggleProjectStar = (id: string) => api.post(`/api/projects/${id}/star`);
+
+// Templates
+export const getTemplates = () => api.get('/api/templates');
+
+export const getTemplatesByCategory = (category: string) =>
+  api.get(`/api/templates/category/${category}`);
+
+export const getTemplate = (id: string) => api.get(`/api/templates/${id}`);
+
+export const createTemplate = (data: any) => api.post('/api/templates', data);
+
+export const updateTemplate = (id: string, data: any) => api.put(`/api/templates/${id}`, data);
+
+export const deleteTemplate = (id: string) => api.delete(`/api/templates/${id}`);
+
+export const searchTemplates = (query: string) =>
+  api.get(`/api/templates/search?q=${encodeURIComponent(query)}`);
+
+export const getPopularTemplates = (limit?: number) =>
+  api.get(`/api/templates/popular${limit ? `?limit=${limit}` : ''}`);
+
+export const createFromTemplate = (id: string) => api.post(`/api/templates/${id}/use`);
+
 export default api;
