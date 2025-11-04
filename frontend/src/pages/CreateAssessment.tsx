@@ -22,6 +22,8 @@ const CreateAssessment: React.FC = () => {
   const [aiFile, setAiFile] = useState<File | null>(null);
   const [numberOfQuestions, setNumberOfQuestions] = useState(10);
   const [jobStatus, setJobStatus] = useState<any>(null);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<any>(null);
 
   useEffect(() => {
     if (id) {
@@ -240,6 +242,58 @@ const CreateAssessment: React.FC = () => {
     } catch (error) {
       toast.error('Failed to delete question');
     }
+  };
+
+  const handleEditQuestion = (question: Question) => {
+    setEditingQuestionId(question.id);
+    setEditingQuestion({
+      ...question,
+      options: question.options || [],
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingQuestionId(null);
+    setEditingQuestion(null);
+  };
+
+  const handleSaveQuestion = async () => {
+    if (!editingQuestion || !editingQuestionId) return;
+
+    try {
+      await api.updateQuestion(editingQuestionId, {
+        question_type: editingQuestion.question_type,
+        question_text: editingQuestion.question_text,
+        options: editingQuestion.options,
+        correct_answer: editingQuestion.correct_answer,
+        points: editingQuestion.points,
+        is_required: editingQuestion.is_required,
+      });
+      toast.success('Question updated');
+      setEditingQuestionId(null);
+      setEditingQuestion(null);
+      loadAssessment();
+    } catch (error) {
+      toast.error('Failed to update question');
+    }
+  };
+
+  const handleOptionChange = (index: number, value: string) => {
+    const newOptions = [...editingQuestion.options];
+    newOptions[index] = value;
+    setEditingQuestion({ ...editingQuestion, options: newOptions });
+  };
+
+  const handleAddOption = () => {
+    setEditingQuestion({
+      ...editingQuestion,
+      options: [...editingQuestion.options, `Option ${editingQuestion.options.length + 1}`],
+    });
+  };
+
+  const handleRemoveOption = (index: number) => {
+    const newOptions = editingQuestion.options.filter((_: any, i: number) => i !== index);
+    setEditingQuestion({ ...editingQuestion, options: newOptions });
   };
 
   return (
@@ -503,36 +557,172 @@ const CreateAssessment: React.FC = () => {
 
               <div className="space-y-4">
                 {questions.map((question, index) => (
-                  <div key={question.id} className="p-4 border border-gray-200 rounded-lg">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className="font-semibold text-gray-900">Q{index + 1}.</span>
-                          <span className="text-gray-900">{question.question_text}</span>
-                          <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
-                            {question.question_type.replace('_', ' ')}
-                          </span>
+                  <div key={question.id} className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary-300 transition">
+                    {editingQuestionId === question.id ? (
+                      // Edit Mode
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="font-semibold text-primary-600">Editing Q{index + 1}</span>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={handleSaveQuestion}
+                              className="px-4 py-1 bg-primary-600 text-white rounded hover:bg-primary-700 transition text-sm"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="px-4 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Question Text</label>
+                          <input
+                            type="text"
+                            value={editingQuestion.question_text}
+                            onChange={(e) => setEditingQuestion({ ...editingQuestion, question_text: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Question Type</label>
+                            <select
+                              value={editingQuestion.question_type}
+                              onChange={(e) => setEditingQuestion({ ...editingQuestion, question_type: e.target.value })}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                            >
+                              <option value="single_choice">Single Choice</option>
+                              <option value="multiple_choice">Multiple Choice</option>
+                              <option value="text">Text Answer</option>
+                              <option value="rating">Rating (1-5)</option>
+                              <option value="yes_no">Yes/No</option>
+                            </select>
+                          </div>
+
                           {type === 'quiz' && (
-                            <span className="px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded">
-                              {question.points} pts
-                            </span>
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Points</label>
+                              <input
+                                type="number"
+                                value={editingQuestion.points}
+                                onChange={(e) => setEditingQuestion({ ...editingQuestion, points: parseInt(e.target.value) || 0 })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                                min="0"
+                              />
+                            </div>
                           )}
                         </div>
-                        {question.options && (
-                          <ul className="ml-6 mt-2 space-y-1">
-                            {question.options.map((option, i) => (
-                              <li key={i} className="text-gray-700 text-sm">• {option}</li>
-                            ))}
-                          </ul>
+
+                        {(editingQuestion.question_type === 'single_choice' || editingQuestion.question_type === 'multiple_choice') && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
+                            <div className="space-y-2">
+                              {editingQuestion.options.map((option: string, i: number) => (
+                                <div key={i} className="flex items-center space-x-2">
+                                  <input
+                                    type="text"
+                                    value={option}
+                                    onChange={(e) => handleOptionChange(i, e.target.value)}
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                                  />
+                                  {type === 'quiz' && (
+                                    <input
+                                      type={editingQuestion.question_type === 'multiple_choice' ? 'checkbox' : 'radio'}
+                                      name={`correct-${question.id}`}
+                                      checked={
+                                        editingQuestion.question_type === 'multiple_choice'
+                                          ? Array.isArray(editingQuestion.correct_answer) && editingQuestion.correct_answer.includes(option)
+                                          : editingQuestion.correct_answer === option
+                                      }
+                                      onChange={(e) => {
+                                        if (editingQuestion.question_type === 'multiple_choice') {
+                                          const current = Array.isArray(editingQuestion.correct_answer) ? editingQuestion.correct_answer : [];
+                                          setEditingQuestion({
+                                            ...editingQuestion,
+                                            correct_answer: e.target.checked
+                                              ? [...current, option]
+                                              : current.filter((o: string) => o !== option),
+                                          });
+                                        } else {
+                                          setEditingQuestion({ ...editingQuestion, correct_answer: option });
+                                        }
+                                      }}
+                                      className="w-4 h-4"
+                                      title="Mark as correct answer"
+                                    />
+                                  )}
+                                  <button
+                                    onClick={() => handleRemoveOption(i)}
+                                    className="px-2 py-1 text-red-600 hover:bg-red-50 rounded"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                onClick={handleAddOption}
+                                className="px-4 py-2 text-primary-600 border border-primary-300 rounded-lg hover:bg-primary-50 transition text-sm"
+                              >
+                                + Add Option
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </div>
-                      <button
-                        onClick={() => handleDeleteQuestion(question.id)}
-                        className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
+                    ) : (
+                      // View Mode
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className="font-semibold text-gray-900">Q{index + 1}.</span>
+                            <span className="text-gray-900">{question.question_text}</span>
+                            <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                              {question.question_type.replace('_', ' ')}
+                            </span>
+                            {type === 'quiz' && (
+                              <span className="px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded">
+                                {question.points} pts
+                              </span>
+                            )}
+                          </div>
+                          {question.options && (
+                            <ul className="ml-6 mt-2 space-y-1">
+                              {question.options.map((option, i) => (
+                                <li key={i} className="text-gray-700 text-sm flex items-center space-x-2">
+                                  <span>• {option}</span>
+                                  {type === 'quiz' && question.correct_answer && (
+                                    (Array.isArray(question.correct_answer) && question.correct_answer.includes(option)) ||
+                                    question.correct_answer === option
+                                  ) && (
+                                    <span className="text-green-600 text-xs">✓ Correct</span>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEditQuestion(question)}
+                            className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteQuestion(question.id)}
+                            className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
 
