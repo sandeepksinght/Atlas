@@ -13,7 +13,7 @@ RUN npm install
 COPY . .
 
 # Build TypeScript
-RUN npm run build
+RUN npm run build && ls -la dist/
 
 # Expose port
 EXPOSE 5000
