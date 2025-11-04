@@ -6,6 +6,8 @@ import assessmentRoutes from './routes/assessments';
 import questionRoutes from './routes/questions';
 import responseRoutes from './routes/responses';
 import jobRoutes from './routes/jobs';
+import projectRoutes from './routes/projects';
+import templateRoutes from './routes/templates';
 import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -30,6 +32,8 @@ app.get('/health', (req, res) => {
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/projects', projectRoutes);
+app.use('/api/templates', templateRoutes);
 app.use('/api/assessments', assessmentRoutes);
 app.use('/api/assessments', questionRoutes);
 app.use('/api/responses', responseRoutes);
