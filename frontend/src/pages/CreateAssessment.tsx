@@ -106,8 +106,15 @@ const CreateAssessment: React.FC = () => {
       const token = response.data.token;
       const shareUrl = `${window.location.origin}/take/${token}`;
 
-      navigator.clipboard.writeText(shareUrl);
-      toast.success('Share link copied to clipboard!');
+      // Try to copy to clipboard
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success('Share link copied to clipboard!');
+      } catch (clipboardError) {
+        // Fallback: show prompt with the link
+        prompt('Copy this share link:', shareUrl);
+        toast.info('Please copy the link from the dialog');
+      }
     } catch (error) {
       toast.error('Failed to generate share link');
     }
