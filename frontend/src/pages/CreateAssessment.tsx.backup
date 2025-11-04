@@ -3,8 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import * as api from '../services/api';
 import { Assessment, Question, AssessmentType, QuestionType } from '../types';
 import { toast } from 'react-toastify';
-import QuestionCard from '../components/QuestionCard';
-import AssessmentSettings from '../components/AssessmentSettings';
 
 const CreateAssessment: React.FC = () => {
   const { id } = useParams();
@@ -24,7 +22,8 @@ const CreateAssessment: React.FC = () => {
   const [aiFile, setAiFile] = useState<File | null>(null);
   const [numberOfQuestions, setNumberOfQuestions] = useState(10);
   const [jobStatus, setJobStatus] = useState<any>(null);
-  const [showSettings, setShowSettings] = useState(false);
+  const [editingQuestionId, setEditingQuestionId] = useState<string | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<any>(null);
 
   useEffect(() => {
     if (id) {
@@ -245,66 +244,56 @@ const CreateAssessment: React.FC = () => {
     }
   };
 
-  const handleUpdateQuestion = async (questionId: string, data: any) => {
+  const handleEditQuestion = (question: Question) => {
+    setEditingQuestionId(question.id);
+    setEditingQuestion({
+      ...question,
+      options: question.options || [],
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingQuestionId(null);
+    setEditingQuestion(null);
+  };
+
+  const handleSaveQuestion = async () => {
+    if (!editingQuestion || !editingQuestionId) return;
+
     try {
-      await api.updateQuestion(questionId, data);
-      // Update local state without reloading
-      setQuestions(questions.map(q => q.id === questionId ? { ...q, ...data } : q));
+      await api.updateQuestion(editingQuestionId, {
+        question_type: editingQuestion.question_type,
+        question_text: editingQuestion.question_text,
+        options: editingQuestion.options,
+        correct_answer: editingQuestion.correct_answer,
+        points: editingQuestion.points,
+        is_required: editingQuestion.is_required,
+      });
+      toast.success('Question updated');
+      setEditingQuestionId(null);
+      setEditingQuestion(null);
+      loadAssessment();
     } catch (error) {
       toast.error('Failed to update question');
     }
   };
 
-  const handleDuplicateQuestion = async (question: Question) => {
-    if (!id) return;
-
-    try {
-      await api.addQuestion(id, {
-        question_type: question.question_type,
-        question_text: `${question.question_text} (Copy)`,
-        options: question.options,
-        correct_answer: question.correct_answer,
-        points: question.points,
-        order_index: questions.length,
-      });
-      toast.success('Question duplicated');
-      loadAssessment();
-    } catch (error) {
-      toast.error('Failed to duplicate question');
-    }
+  const handleOptionChange = (index: number, value: string) => {
+    const newOptions = [...editingQuestion.options];
+    newOptions[index] = value;
+    setEditingQuestion({ ...editingQuestion, options: newOptions });
   };
 
-  const handleMoveQuestion = async (index: number, direction: 'up' | 'down') => {
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= questions.length) return;
-
-    const newQuestions = [...questions];
-    [newQuestions[index], newQuestions[newIndex]] = [newQuestions[newIndex], newQuestions[index]];
-    setQuestions(newQuestions);
-
-    // Update order on backend
-    try {
-      await Promise.all(
-        newQuestions.map((q, idx) =>
-          api.updateQuestion(q.id, { ...q, order_index: idx })
-        )
-      );
-    } catch (error) {
-      toast.error('Failed to reorder questions');
-      loadAssessment();
-    }
+  const handleAddOption = () => {
+    setEditingQuestion({
+      ...editingQuestion,
+      options: [...editingQuestion.options, `Option ${editingQuestion.options.length + 1}`],
+    });
   };
 
-  const handleSaveSettings = async (newSettings: any) => {
-    if (!id) return;
-
-    try {
-      await api.updateAssessment(id, { title, description, settings: newSettings });
-      setAssessment({ ...assessment!, settings: newSettings });
-      toast.success('Settings saved');
-    } catch (error) {
-      toast.error('Failed to save settings');
-    }
+  const handleRemoveOption = (index: number) => {
+    const newOptions = editingQuestion.options.filter((_: any, i: number) => i !== index);
+    setEditingQuestion({ ...editingQuestion, options: newOptions });
   };
 
   return (
@@ -399,19 +388,7 @@ const CreateAssessment: React.FC = () => {
 
           {id && (
             <div className="bg-white rounded-xl shadow-md p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">Questions</h2>
-                <button
-                  onClick={() => setShowSettings(true)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition flex items-center space-x-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>Settings</span>
-                </button>
-              </div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Questions</h2>
 
               <div className="mb-6">
                 <div className="flex space-x-2 mb-4">
@@ -578,19 +555,175 @@ const CreateAssessment: React.FC = () => {
                 )}
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-4">
                 {questions.map((question, index) => (
-                  <QuestionCard
-                    key={question.id}
-                    question={question}
-                    index={index}
-                    assessmentType={type}
-                    onUpdate={handleUpdateQuestion}
-                    onDelete={handleDeleteQuestion}
-                    onDuplicate={handleDuplicateQuestion}
-                    onMoveUp={index > 0 ? () => handleMoveQuestion(index, 'up') : undefined}
-                    onMoveDown={index < questions.length - 1 ? () => handleMoveQuestion(index, 'down') : undefined}
-                  />
+                  <div key={question.id} className="p-4 border-2 border-gray-200 rounded-lg hover:border-primary-300 transition">
+                    {editingQuestionId === question.id ? (
+                      // Edit Mode
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="font-semibold text-primary-600">Editing Q{index + 1}</span>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={handleSaveQuestion}
+                              className="px-4 py-1 bg-primary-600 text-white rounded hover:bg-primary-700 transition text-sm"
+                            >
+                              Save
+                            </button>
+                            <button
+                              onClick={handleCancelEdit}
+                              className="px-4 py-1 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition text-sm"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Question Text</label>
+                          <input
+                            type="text"
+                            value={editingQuestion.question_text}
+                            onChange={(e) => setEditingQuestion({ ...editingQuestion, question_text: e.target.value })}
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Question Type</label>
+                            <select
+                              value={editingQuestion.question_type}
+                              onChange={(e) => setEditingQuestion({ ...editingQuestion, question_type: e.target.value })}
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                            >
+                              <option value="single_choice">Single Choice</option>
+                              <option value="multiple_choice">Multiple Choice</option>
+                              <option value="text">Text Answer</option>
+                              <option value="rating">Rating (1-5)</option>
+                              <option value="yes_no">Yes/No</option>
+                            </select>
+                          </div>
+
+                          {type === 'quiz' && (
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-2">Points</label>
+                              <input
+                                type="number"
+                                value={editingQuestion.points}
+                                onChange={(e) => setEditingQuestion({ ...editingQuestion, points: parseInt(e.target.value) || 0 })}
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                                min="0"
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {(editingQuestion.question_type === 'single_choice' || editingQuestion.question_type === 'multiple_choice') && (
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Options</label>
+                            <div className="space-y-2">
+                              {editingQuestion.options.map((option: string, i: number) => (
+                                <div key={i} className="flex items-center space-x-2">
+                                  <input
+                                    type="text"
+                                    value={option}
+                                    onChange={(e) => handleOptionChange(i, e.target.value)}
+                                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                                  />
+                                  {type === 'quiz' && (
+                                    <input
+                                      type={editingQuestion.question_type === 'multiple_choice' ? 'checkbox' : 'radio'}
+                                      name={`correct-${question.id}`}
+                                      checked={
+                                        editingQuestion.question_type === 'multiple_choice'
+                                          ? Array.isArray(editingQuestion.correct_answer) && editingQuestion.correct_answer.includes(option)
+                                          : editingQuestion.correct_answer === option
+                                      }
+                                      onChange={(e) => {
+                                        if (editingQuestion.question_type === 'multiple_choice') {
+                                          const current = Array.isArray(editingQuestion.correct_answer) ? editingQuestion.correct_answer : [];
+                                          setEditingQuestion({
+                                            ...editingQuestion,
+                                            correct_answer: e.target.checked
+                                              ? [...current, option]
+                                              : current.filter((o: string) => o !== option),
+                                          });
+                                        } else {
+                                          setEditingQuestion({ ...editingQuestion, correct_answer: option });
+                                        }
+                                      }}
+                                      className="w-4 h-4"
+                                      title="Mark as correct answer"
+                                    />
+                                  )}
+                                  <button
+                                    onClick={() => handleRemoveOption(i)}
+                                    className="px-2 py-1 text-red-600 hover:bg-red-50 rounded"
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                              <button
+                                onClick={handleAddOption}
+                                className="px-4 py-2 text-primary-600 border border-primary-300 rounded-lg hover:bg-primary-50 transition text-sm"
+                              >
+                                + Add Option
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      // View Mode
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <span className="font-semibold text-gray-900">Q{index + 1}.</span>
+                            <span className="text-gray-900">{question.question_text}</span>
+                            <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">
+                              {question.question_type.replace('_', ' ')}
+                            </span>
+                            {type === 'quiz' && (
+                              <span className="px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded">
+                                {question.points} pts
+                              </span>
+                            )}
+                          </div>
+                          {question.options && (
+                            <ul className="ml-6 mt-2 space-y-1">
+                              {question.options.map((option, i) => (
+                                <li key={i} className="text-gray-700 text-sm flex items-center space-x-2">
+                                  <span>• {option}</span>
+                                  {type === 'quiz' && question.correct_answer && (
+                                    (Array.isArray(question.correct_answer) && question.correct_answer.includes(option)) ||
+                                    question.correct_answer === option
+                                  ) && (
+                                    <span className="text-green-600 text-xs">✓ Correct</span>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleEditQuestion(question)}
+                            className="px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition text-sm"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDeleteQuestion(question.id)}
+                            className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 transition text-sm"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 ))}
 
                 {questions.length === 0 && (
@@ -603,15 +736,6 @@ const CreateAssessment: React.FC = () => {
           )}
         </div>
       </div>
-
-      {/* Assessment Settings Modal */}
-      {showSettings && assessment && (
-        <AssessmentSettings
-          settings={assessment.settings || {}}
-          onSave={handleSaveSettings}
-          onClose={() => setShowSettings(false)}
-        />
-      )}
     </div>
   );
 };
