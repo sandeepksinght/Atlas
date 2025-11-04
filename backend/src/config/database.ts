@@ -3,9 +3,10 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Disable SSL for local development/Docker environments
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: false,
 });
 
 pool.on('error', (err) => {
