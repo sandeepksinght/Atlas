@@ -39,9 +39,9 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }
       completed: false,
     },
     {
-      id: 'ai-options',
-      title: 'AI Generation Options',
-      description: 'Configure AI question generation',
+      id: 'content',
+      title: 'Content & Questions',
+      description: 'Configure your question source',
       completed: false,
     },
     {
@@ -60,13 +60,23 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+      // If moving from step 2 (strategy) and manual is selected, skip step 3
+      if (currentStep === 2 && wizardData.questionStrategy === 'manual') {
+        setCurrentStep(4); // Jump directly to settings
+      } else {
+        setCurrentStep(currentStep + 1);
+      }
     }
   };
 
   const handlePrevious = () => {
     if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
+      // If moving back from step 4 (settings) and manual is selected, skip step 3
+      if (currentStep === 4 && wizardData.questionStrategy === 'manual') {
+        setCurrentStep(2); // Jump back to strategy
+      } else {
+        setCurrentStep(currentStep - 1);
+      }
     }
   };
 
@@ -145,8 +155,11 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }
           {currentStep === 2 && (
             <Step3Strategy onNext={handleNext} onPrevious={handlePrevious} onSkip={handleSkip} updateData={updateWizardData} data={wizardData} />
           )}
-          {currentStep === 3 && wizardData.useAI && (
+          {currentStep === 3 && wizardData.questionStrategy === 'ai' && (
             <Step4AIOptions onNext={handleNext} onPrevious={handlePrevious} updateData={updateWizardData} data={wizardData} />
+          )}
+          {currentStep === 3 && wizardData.questionStrategy === 'bank' && (
+            <Step3QuestionBank onNext={handleNext} onPrevious={handlePrevious} updateData={updateWizardData} data={wizardData} />
           )}
           {currentStep === 4 && (
             <Step5Settings onNext={handleNext} onPrevious={handlePrevious} updateData={updateWizardData} data={wizardData} />
@@ -407,27 +420,134 @@ const Step3Strategy: React.FC<StepProps> = ({ onNext, onPrevious, onSkip, update
   );
 };
 
+// Step 3B: Question Bank (for 'bank' strategy)
+const Step3QuestionBank: React.FC<StepProps> = ({ onNext, onPrevious, updateData, data }) => {
+  const [selectedQuestions, setSelectedQuestions] = useState<string[]>(data.selectedQuestions || []);
+  const [loading, setLoading] = useState(true);
+  const [questions, setQuestions] = useState<any[]>([]);
+
+  // TODO: Load questions from question bank API
+  // For now, showing placeholder
+  React.useEffect(() => {
+    // Simulate loading questions
+    setTimeout(() => {
+      setQuestions([
+        { id: '1', question_text: 'Sample Question 1', question_type: 'multiple_choice' },
+        { id: '2', question_text: 'Sample Question 2', question_type: 'true_false' },
+      ]);
+      setLoading(false);
+    }, 500);
+  }, []);
+
+  const toggleQuestion = (questionId: string) => {
+    if (selectedQuestions.includes(questionId)) {
+      setSelectedQuestions(selectedQuestions.filter(id => id !== questionId));
+    } else {
+      setSelectedQuestions([...selectedQuestions, questionId]);
+    }
+  };
+
+  const handleNext = () => {
+    updateData({ selectedQuestions });
+    onNext();
+  };
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">Select from Question Bank</h2>
+      <p className="text-gray-600 mb-8">Choose questions from your saved question bank</p>
+
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600">Loading questions...</p>
+        </div>
+      ) : questions.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <div className="text-5xl mb-4">📋</div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Questions Available</h3>
+          <p className="text-gray-600 mb-4">Your question bank is empty. Create some questions first!</p>
+        </div>
+      ) : (
+        <div className="space-y-3 mb-8">
+          {questions.map((question) => (
+            <button
+              key={question.id}
+              onClick={() => toggleQuestion(question.id)}
+              className={cn(
+                'w-full p-4 rounded-lg border-2 transition-all text-left',
+                selectedQuestions.includes(question.id)
+                  ? 'border-blue-600 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              )}
+            >
+              <div className="flex items-start">
+                <div className={cn(
+                  'w-5 h-5 rounded border-2 mr-3 mt-0.5 flex-shrink-0',
+                  selectedQuestions.includes(question.id)
+                    ? 'bg-blue-600 border-blue-600'
+                    : 'border-gray-300'
+                )}>
+                  {selectedQuestions.includes(question.id) && (
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="font-medium text-gray-900">{question.question_text}</div>
+                  <div className="text-sm text-gray-500 capitalize mt-1">{question.question_type.replace('_', ' ')}</div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="flex justify-between">
+        <Button variant="secondary" onClick={onPrevious}>
+          Back
+        </Button>
+        <Button onClick={handleNext} disabled={selectedQuestions.length === 0}>
+          Continue ({selectedQuestions.length} selected)
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 // Step 4: AI Options (Advanced)
 const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, data }) => {
+  const [contentSource, setContentSource] = useState(data.aiOptions?.contentSource || '');
+  const [textContent, setTextContent] = useState(data.aiOptions?.textContent || '');
+  const [url, setUrl] = useState(data.aiOptions?.url || '');
+  const [file, setFile] = useState<File | null>(data.aiOptions?.file || null);
   const [numberOfQuestions, setNumberOfQuestions] = useState(data.aiOptions?.numberOfQuestions || 10);
   const [difficulty, setDifficulty] = useState(data.aiOptions?.difficulty || 'mixed');
-  const [questionTypes, setQuestionTypes] = useState(
-    data.aiOptions?.questionTypes || {
-      single_choice: 50,
-      multiple_choice: 25,
-      text: 15,
-      rating: 10,
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setFile(e.target.files[0]);
     }
-  );
-  const [bloomsLevel, setBloomsLevel] = useState(data.aiOptions?.bloomsLevel || 'understand');
+  };
+
+  const isValidForNext = () => {
+    if (!contentSource) return false;
+    if (contentSource === 'text' && !textContent.trim()) return false;
+    if (contentSource === 'url' && !url.trim()) return false;
+    if (contentSource === 'file' && !file) return false;
+    return true;
+  };
 
   const handleNext = () => {
     updateData({
       aiOptions: {
+        contentSource,
+        textContent,
+        url,
+        file,
         numberOfQuestions,
         difficulty,
-        questionTypes,
-        bloomsLevel,
       },
     });
     onNext();
@@ -435,104 +555,192 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
 
   return (
     <div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">AI Generation Options</h2>
-      <p className="text-gray-600 mb-8">Configure how AI generates your questions</p>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">AI Generation Source</h2>
+      <p className="text-gray-600 mb-8">Where should AI generate questions from?</p>
 
       <div className="space-y-6">
-        {/* Number of Questions */}
+        {/* Content Source Selection */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Number of Questions: {numberOfQuestions}
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Choose Content Source <span className="text-rose-500">*</span>
           </label>
-          <input
-            type="range"
-            min="1"
-            max="50"
-            value={numberOfQuestions}
-            onChange={(e) => setNumberOfQuestions(parseInt(e.target.value))}
-            className="w-full"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>1</span>
-            <span>25</span>
-            <span>50</span>
-          </div>
-        </div>
-
-        {/* Difficulty Level */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty Level</label>
-          <div className="grid grid-cols-4 gap-2">
-            {['beginner', 'intermediate', 'advanced', 'mixed'].map((level) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                id: 'text',
+                title: 'Paste Text',
+                icon: '📝',
+                description: 'Paste or type your content',
+              },
+              {
+                id: 'file',
+                title: 'Upload File',
+                icon: '📄',
+                description: 'PDF, Word, Excel, images',
+              },
+              {
+                id: 'url',
+                title: 'From URL',
+                icon: '🔗',
+                description: 'Webpage or online document',
+              },
+            ].map((option) => (
               <button
-                key={level}
-                onClick={() => setDifficulty(level)}
+                key={option.id}
+                onClick={() => setContentSource(option.id)}
                 className={cn(
-                  'px-4 py-2 rounded-lg border-2 transition-all capitalize',
-                  difficulty === level
-                    ? 'border-blue-600 bg-blue-50 text-blue-700'
-                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                  'p-4 rounded-xl border-2 transition-all text-left',
+                  contentSource === option.id
+                    ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-100'
+                    : 'border-gray-200 hover:border-gray-300'
                 )}
               >
-                {level}
+                <div className="text-3xl mb-2">{option.icon}</div>
+                <h3 className="font-semibold text-gray-900 mb-1">{option.title}</h3>
+                <p className="text-xs text-gray-600">{option.description}</p>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Bloom's Taxonomy */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">Bloom's Taxonomy Level</label>
-          <select
-            value={bloomsLevel}
-            onChange={(e) => setBloomsLevel(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="remember">Remember (recall facts)</option>
-            <option value="understand">Understand (explain concepts)</option>
-            <option value="apply">Apply (use knowledge)</option>
-            <option value="analyze">Analyze (examine details)</option>
-            <option value="evaluate">Evaluate (justify decisions)</option>
-            <option value="create">Create (design solutions)</option>
-          </select>
-        </div>
+        {/* Text Content Input */}
+        {contentSource === 'text' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Paste Your Content <span className="text-rose-500">*</span>
+            </label>
+            <textarea
+              value={textContent}
+              onChange={(e) => setTextContent(e.target.value)}
+              rows={10}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+              placeholder="Paste your content here... This can be lecture notes, study materials, articles, or any text you want to generate questions from."
+            />
+            <p className="mt-2 text-sm text-gray-500">
+              {textContent.length} characters ({Math.ceil(textContent.length / 4)} tokens approx.)
+            </p>
+          </div>
+        )}
 
-        {/* Question Type Distribution */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
-            Question Type Distribution (%)
-          </label>
-          <div className="space-y-3">
-            {Object.entries(questionTypes).map(([type, value]) => (
-              <div key={type}>
-                <div className="flex justify-between mb-1">
-                  <span className="text-sm text-gray-700 capitalize">{type.replace('_', ' ')}</span>
-                  <span className="text-sm font-medium text-gray-900">{value}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={value}
-                  onChange={(e) =>
-                    setQuestionTypes({ ...questionTypes, [type]: parseInt(e.target.value) })
-                  }
-                  className="w-full"
-                />
-              </div>
-            ))}
+        {/* File Upload */}
+        {contentSource === 'file' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Upload Document <span className="text-rose-500">*</span>
+            </label>
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 transition">
+              <input
+                type="file"
+                onChange={handleFileChange}
+                accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.xlsx,.pptx"
+                className="hidden"
+                id="file-upload"
+              />
+              <label htmlFor="file-upload" className="cursor-pointer">
+                <div className="text-5xl mb-4">📤</div>
+                {file ? (
+                  <div>
+                    <p className="text-lg font-semibold text-gray-900 mb-1">{file.name}</p>
+                    <p className="text-sm text-gray-600">
+                      {(file.size / 1024).toFixed(2)} KB • Click to change
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-lg font-semibold text-gray-900 mb-1">
+                      Click to upload or drag and drop
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      PDF, Word, Excel, PowerPoint, Images (Max 10MB)
+                    </p>
+                  </div>
+                )}
+              </label>
+            </div>
+            <p className="mt-2 text-sm text-gray-500">
+              Supported: PDF, DOCX, XLSX, PPTX, TXT, PNG, JPG, JPEG
+            </p>
           </div>
-          <div className="mt-2 text-sm text-gray-500">
-            Total: {Object.values(questionTypes).reduce((a: number, b: number) => a + b, 0)}%
+        )}
+
+        {/* URL Input */}
+        {contentSource === 'url' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Enter URL <span className="text-rose-500">*</span>
+            </label>
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="https://example.com/article-or-document"
+            />
+            <p className="mt-2 text-sm text-gray-500">
+              We'll fetch and extract content from the webpage
+            </p>
           </div>
-        </div>
+        )}
+
+        {/* Divider */}
+        {contentSource && (
+          <div className="border-t border-gray-200 pt-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Generation Options</h3>
+          </div>
+        )}
+
+        {/* Number of Questions */}
+        {contentSource && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Number of Questions: {numberOfQuestions}
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="50"
+              value={numberOfQuestions}
+              onChange={(e) => setNumberOfQuestions(parseInt(e.target.value))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            />
+            <div className="flex justify-between text-xs text-gray-500 mt-1">
+              <span>1</span>
+              <span>25</span>
+              <span>50</span>
+            </div>
+          </div>
+        )}
+
+        {/* Difficulty Level */}
+        {contentSource && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty Level</label>
+            <div className="grid grid-cols-4 gap-2">
+              {['beginner', 'intermediate', 'advanced', 'mixed'].map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setDifficulty(level)}
+                  className={cn(
+                    'px-4 py-2 rounded-lg border-2 transition-all capitalize',
+                    difficulty === level
+                      ? 'border-blue-600 bg-blue-50 text-blue-700 font-semibold'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                  )}
+                >
+                  {level}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex justify-between mt-8">
         <Button variant="secondary" onClick={onPrevious}>
           Back
         </Button>
-        <Button onClick={handleNext}>
+        <Button onClick={handleNext} disabled={!isValidForNext()}>
           Continue
         </Button>
       </div>
@@ -708,11 +916,41 @@ const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => 
           </div>
         </div>
 
-        {data.aiOptions && (
+        {/* AI Strategy Details */}
+        {data.questionStrategy === 'ai' && data.aiOptions && (
           <div>
             <div className="text-sm font-medium text-gray-500">AI Configuration</div>
             <div className="text-gray-700">
-              {data.aiOptions.numberOfQuestions} questions, {data.aiOptions.difficulty} difficulty
+              <div className="mb-1">
+                <span className="font-semibold">Source:</span>{' '}
+                {data.aiOptions.contentSource === 'text' && 'Pasted Text'}
+                {data.aiOptions.contentSource === 'file' && `File: ${data.aiOptions.file?.name || 'Uploaded'}`}
+                {data.aiOptions.contentSource === 'url' && `URL: ${data.aiOptions.url}`}
+              </div>
+              <div>
+                <span className="font-semibold">Questions:</span> {data.aiOptions.numberOfQuestions},{' '}
+                <span className="font-semibold">Difficulty:</span> {data.aiOptions.difficulty}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Question Bank Strategy Details */}
+        {data.questionStrategy === 'bank' && data.selectedQuestions && (
+          <div>
+            <div className="text-sm font-medium text-gray-500">Question Bank</div>
+            <div className="text-gray-700">
+              <span className="font-semibold">{data.selectedQuestions.length}</span> questions selected from your question bank
+            </div>
+          </div>
+        )}
+
+        {/* Manual Strategy Details */}
+        {data.questionStrategy === 'manual' && (
+          <div>
+            <div className="text-sm font-medium text-gray-500">Manual Entry</div>
+            <div className="text-gray-700">
+              Questions will be added manually after creation
             </div>
           </div>
         )}
