@@ -37,10 +37,12 @@ const BlogPost: React.FC = () => {
         </header>
 
         {/* Featured image */}
-        <div className="h-96 bg-gradient-to-br from-blue-100 to-blue-200 rounded-2xl mb-12 flex items-center justify-center">
-          <svg className="w-24 h-24 text-blue-600 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
+        <div className="h-96 rounded-2xl mb-12 overflow-hidden shadow-lg">
+          <img
+            src="https://images.pexels.com/photos/5905709/pexels-photo-5905709.jpeg?auto=compress&cs=tinysrgb&w=1200"
+            alt="Creating Effective Online Assessments"
+            className="w-full h-full object-cover"
+          />
         </div>
 
         {/* Content */}

@@ -21,7 +21,7 @@ const blogPosts: BlogPost[] = [
     date: '2024-01-15',
     category: 'Best Practices',
     readTime: '5 min read',
-    image: 'assessment'
+    image: 'https://images.pexels.com/photos/5905709/pexels-photo-5905709.jpeg?auto=compress&cs=tinysrgb&w=800'
   },
   {
     id: '2',
@@ -31,7 +31,7 @@ const blogPosts: BlogPost[] = [
     date: '2024-01-10',
     category: 'AI & Technology',
     readTime: '7 min read',
-    image: 'ai'
+    image: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=800'
   },
   {
     id: '3',
@@ -41,7 +41,7 @@ const blogPosts: BlogPost[] = [
     date: '2024-01-05',
     category: 'HR & Workplace',
     readTime: '10 min read',
-    image: 'engagement'
+    image: 'https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=800'
   },
   {
     id: '4',
@@ -51,7 +51,7 @@ const blogPosts: BlogPost[] = [
     date: '2023-12-28',
     category: 'Marketing',
     readTime: '6 min read',
-    image: 'completion'
+    image: 'https://images.pexels.com/photos/590041/pexels-photo-590041.jpeg?auto=compress&cs=tinysrgb&w=800'
   },
   {
     id: '5',
@@ -61,7 +61,7 @@ const blogPosts: BlogPost[] = [
     date: '2023-12-20',
     category: 'Accessibility',
     readTime: '8 min read',
-    image: 'accessibility'
+    image: 'https://images.pexels.com/photos/7054399/pexels-photo-7054399.jpeg?auto=compress&cs=tinysrgb&w=800'
   },
   {
     id: '6',
@@ -71,7 +71,7 @@ const blogPosts: BlogPost[] = [
     date: '2023-12-15',
     category: 'Analytics',
     readTime: '9 min read',
-    image: 'analytics'
+    image: 'https://images.pexels.com/photos/669610/pexels-photo-669610.jpeg?auto=compress&cs=tinysrgb&w=800'
   }
 ];
 
@@ -128,11 +128,13 @@ const Blog: React.FC = () => {
                 to={`/blog/${post.id}`}
                 className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all border border-gray-100 overflow-hidden group"
               >
-                {/* Image placeholder */}
-                <div className="h-48 bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
-                  <svg className="w-16 h-16 text-blue-600 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                  </svg>
+                {/* Blog Image */}
+                <div className="h-48 overflow-hidden">
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
                 </div>
 
                 <div className="p-6">
