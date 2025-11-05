@@ -92,18 +92,9 @@ export const CreateGameSession: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
-      <div className="max-w-5xl mx-auto px-6 py-12">
+      <div className="max-w-6xl mx-auto px-6 py-8">
         {/* Header */}
         <div className="mb-8">
-          <button
-            onClick={() => navigate('/dashboard')}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Dashboard
-          </button>
           <h1 className="text-4xl font-black text-gray-900 mb-3">
             Create Live Game 🎮
           </h1>
@@ -200,14 +191,7 @@ export const CreateGameSession: React.FC = () => {
             </div>
 
             {/* Create Button */}
-            <div className="flex justify-end space-x-4">
-              <Button
-                variant="secondary"
-                onClick={() => navigate('/dashboard')}
-                className="px-6 py-3"
-              >
-                Cancel
-              </Button>
+            <div className="flex justify-end">
               <Button
                 onClick={handleCreateGame}
                 disabled={!selectedAssessmentId || !gameTitle.trim() || creating}

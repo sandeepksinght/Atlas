@@ -182,19 +182,22 @@ const App: React.FC = () => {
               }
             />
 
-            {/* Live Game Routes - Full screen, no sidebar */}
-            <Route path="/game/join" element={<JoinGame />} />
-
-            <Route path="/game/play" element={<PlayGame />} />
-
+            {/* Game creation route with sidebar */}
             <Route
               path="/game/create"
               element={
                 <ProtectedRoute>
-                  <CreateGameSession />
+                  <AuthenticatedLayout>
+                    <CreateGameSession />
+                  </AuthenticatedLayout>
                 </ProtectedRoute>
               }
             />
+
+            {/* Live Game Routes - Full screen, no sidebar */}
+            <Route path="/game/join" element={<JoinGame />} />
+
+            <Route path="/game/play" element={<PlayGame />} />
 
             <Route
               path="/game/host/:sessionId"
