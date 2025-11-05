@@ -99,10 +99,10 @@ const Landing: React.FC = () => {
                 </div>
                 <div className="mt-8 pt-8 border-t border-white/20">
                   <div className="flex -space-x-3">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-red-400 border-2 border-white"></div>
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 border-2 border-white"></div>
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 border-2 border-white"></div>
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-400 border-2 border-white"></div>
+                    <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=200" alt="User" className="w-12 h-12 rounded-full border-2 border-white object-cover" />
+                    <img src="https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=200" alt="User" className="w-12 h-12 rounded-full border-2 border-white object-cover" />
+                    <img src="https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=200" alt="User" className="w-12 h-12 rounded-full border-2 border-white object-cover" />
+                    <img src="https://images.pexels.com/photos/1516680/pexels-photo-1516680.jpeg?auto=compress&cs=tinysrgb&w=200" alt="User" className="w-12 h-12 rounded-full border-2 border-white object-cover" />
                   </div>
                   <p className="text-sm text-gray-300 mt-4">Trusted by educators, businesses & researchers worldwide</p>
                 </div>
@@ -293,8 +293,15 @@ const Landing: React.FC = () => {
                 </ul>
               </div>
               <div className="md:w-1/2">
-                <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-3xl h-80 flex items-center justify-center">
-                  <span className="text-9xl font-black text-white/20">01</span>
+                <div className="relative rounded-3xl h-80 overflow-hidden shadow-2xl">
+                  <img
+                    src="https://images.pexels.com/photos/3861958/pexels-photo-3861958.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                    alt="AI Technology"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/30 to-purple-600/30 flex items-center justify-center">
+                    <span className="text-9xl font-black text-white/30">01</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -338,8 +345,15 @@ const Landing: React.FC = () => {
                 </ul>
               </div>
               <div className="md:w-1/2">
-                <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-3xl h-80 flex items-center justify-center">
-                  <span className="text-9xl font-black text-white/20">02</span>
+                <div className="relative rounded-3xl h-80 overflow-hidden shadow-2xl">
+                  <img
+                    src="https://images.pexels.com/photos/196644/pexels-photo-196644.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                    alt="Customization"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-600/30 flex items-center justify-center">
+                    <span className="text-9xl font-black text-white/30">02</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -383,8 +397,15 @@ const Landing: React.FC = () => {
                 </ul>
               </div>
               <div className="md:w-1/2">
-                <div className="bg-gradient-to-br from-pink-500 to-red-600 rounded-3xl h-80 flex items-center justify-center">
-                  <span className="text-9xl font-black text-white/20">03</span>
+                <div className="relative rounded-3xl h-80 overflow-hidden shadow-2xl">
+                  <img
+                    src="https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                    alt="Analytics and Insights"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-pink-500/30 to-red-600/30 flex items-center justify-center">
+                    <span className="text-9xl font-black text-white/30">03</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -397,9 +418,9 @@ const Landing: React.FC = () => {
         <div className="container mx-auto max-w-4xl text-center">
           <div className="mb-12">
             <div className="flex justify-center -space-x-4 mb-8">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-400 to-red-400 border-4 border-white shadow-xl"></div>
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 border-4 border-white shadow-xl"></div>
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 border-4 border-white shadow-xl"></div>
+              <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=200" alt="User testimonial" className="w-16 h-16 rounded-full border-4 border-white shadow-xl object-cover" />
+              <img src="https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=200" alt="User testimonial" className="w-16 h-16 rounded-full border-4 border-white shadow-xl object-cover" />
+              <img src="https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=200" alt="User testimonial" className="w-16 h-16 rounded-full border-4 border-white shadow-xl object-cover" />
             </div>
             <div className="flex justify-center gap-1 mb-8">
               {[...Array(5)].map((_, i) => (
