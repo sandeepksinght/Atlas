@@ -6,11 +6,12 @@ export const createAssessment = async (
   title: string,
   description: string,
   type: string,
-  settings: any
+  settings: any,
+  projectId?: string | null
 ): Promise<Assessment> => {
   const result = await query(
-    'INSERT INTO assessments (user_id, title, description, type, settings) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-    [userId, title, description, type, JSON.stringify(settings)]
+    'INSERT INTO assessments (user_id, title, description, type, settings, project_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+    [userId, title, description, type, JSON.stringify(settings), projectId || null]
   );
 
   return result.rows[0];

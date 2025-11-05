@@ -373,9 +373,13 @@ const ProjectItem: React.FC<ProjectItemProps> = ({ project, onToggleStar, onRefr
           </button>
         )}
         <div
-          className="w-3 h-3 rounded flex-shrink-0 shadow-sm"
-          style={{ backgroundColor: project.color }}
-        />
+          className="w-5 h-5 flex-shrink-0 flex items-center justify-center"
+          style={{ color: project.color }}
+        >
+          <svg className="w-full h-full" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" />
+          </svg>
+        </div>
         <span className="flex-1 text-sm text-slate-300 group-hover:text-white truncate transition">{project.name}</span>
         <button
           onClick={(e) => onToggleStar(project.id, e)}

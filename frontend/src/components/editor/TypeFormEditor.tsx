@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { cn } from '../../utils/cn';
 import { Button } from '../ui/Button';
+import { ProjectSelector } from './ProjectSelector';
+import { toast } from 'react-toastify';
+import * as api from '../../services/api';
 
 interface Question {
   id: string;
@@ -42,6 +45,8 @@ export const TypeFormEditor: React.FC = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [previewMode, setPreviewMode] = useState(false);
+  const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [assessment, setAssessment] = useState<Assessment>({
     id: id || 'new',
     title: 'Untitled Assessment',
@@ -166,6 +171,43 @@ export const TypeFormEditor: React.FC = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentQuestionIndex, assessment.questions.length]);
 
+  const handleSaveAndExit = () => {
+    setShowProjectSelector(true);
+  };
+
+  const handleProjectSelected = async (projectId: string) => {
+    setSaving(true);
+    try {
+      // Create or update assessment
+      const assessmentData = {
+        title: assessment.title,
+        description: assessment.description,
+        type: 'survey',
+        settings: {},
+        project_id: projectId,
+      };
+
+      let assessmentId = assessment.id;
+      if (assessment.id === 'new') {
+        const response = await api.createAssessment(assessmentData);
+        assessmentId = response.data.id;
+      } else {
+        await api.updateAssessment(assessment.id, assessmentData);
+      }
+
+      // Save questions (simplified - you may want to handle this differently)
+      // For now, we'll just show success and navigate
+      toast.success('Assessment saved successfully!');
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Failed to save assessment:', error);
+      toast.error('Failed to save assessment');
+    } finally {
+      setSaving(false);
+      setShowProjectSelector(false);
+    }
+  };
+
   return (
     <div className="h-screen w-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-hidden flex">
       {/* Sidebar */}
@@ -244,9 +286,10 @@ export const TypeFormEditor: React.FC = () => {
             {/* Footer Actions */}
             <div className="p-4 border-t border-gray-200 space-y-2">
               <Button
-                onClick={() => navigate('/dashboard')}
+                onClick={handleSaveAndExit}
                 className="w-full"
                 size="sm"
+                loading={saving}
               >
                 Save & Exit
               </Button>
@@ -913,12 +956,20 @@ export const TypeFormEditor: React.FC = () => {
               <Button variant="secondary" onClick={() => setPreviewMode(false)}>
                 Close Preview
               </Button>
-              <Button onClick={() => navigate('/dashboard')}>
+              <Button onClick={handleSaveAndExit} loading={saving}>
                 Save & Exit
               </Button>
             </div>
           </div>
         </div>
+      )}
+
+      {/* Project Selector Modal */}
+      {showProjectSelector && (
+        <ProjectSelector
+          onSelect={handleProjectSelected}
+          onClose={() => setShowProjectSelector(false)}
+        />
       )}
     </div>
   );

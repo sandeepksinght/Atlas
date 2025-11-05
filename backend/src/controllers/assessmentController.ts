@@ -8,7 +8,7 @@ import * as ResponseModel from '../models/Response';
 export const createAssessment = async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
-    const { title, description, type, settings } = req.body;
+    const { title, description, type, settings, project_id } = req.body;
 
     if (!title || !type) {
       return res.status(400).json({ error: 'Title and type are required' });
@@ -19,7 +19,8 @@ export const createAssessment = async (req: AuthRequest, res: Response) => {
       title,
       description || '',
       type,
-      settings || {}
+      settings || {},
+      project_id || null
     );
 
     res.status(201).json(assessment);
