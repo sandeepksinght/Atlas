@@ -32,7 +32,7 @@ export const StickySaveBar: React.FC<StickySaveBarProps> = ({
 
     if (diffMins < 1) return 'Just saved';
     if (diffMins === 1) return 'Saved 1 minute ago';
-    if (diffMins < 60) return `Saved ${diffMins} minutes ago';
+    if (diffMins < 60) return `Saved ${diffMins} minutes ago`;
     return 'Saved over an hour ago';
   };
 
