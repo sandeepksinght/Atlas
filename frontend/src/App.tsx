@@ -55,6 +55,7 @@ const App: React.FC = () => {
           <Routes>
             {/* Public route for taking assessments - no navbar, no sidebar */}
             <Route path="/take/:token" element={<TakeAssessment />} />
+            <Route path="/take-assessment/:token" element={<TakeAssessment />} />
 
             {/* Public routes with navbar only */}
             <Route path="/" element={<><Navbar /><Landing /></>} />
