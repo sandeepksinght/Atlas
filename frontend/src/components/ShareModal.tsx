@@ -31,7 +31,7 @@ const ShareModal: React.FC<ShareModalProps> = ({ isOpen, onClose, assessmentId, 
     try {
       const response = await api.generateShareLink(assessmentId);
       const token = response.data.token;
-      const link = `${window.location.origin}/take-assessment/${token}`;
+      const link = `${window.location.origin}/take/${token}`;
       setShareLink(link);
     } catch (err: any) {
       console.error('Error generating share link:', err);
