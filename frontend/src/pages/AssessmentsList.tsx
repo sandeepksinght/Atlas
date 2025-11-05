@@ -13,6 +13,7 @@ const AssessmentsList: React.FC = () => {
   const [creatingGameFor, setCreatingGameFor] = useState<string | null>(null);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [selectedAssessment, setSelectedAssessment] = useState<Assessment | null>(null);
+  const [publishingId, setPublishingId] = useState<string | null>(null);
 
   useEffect(() => {
     loadAssessments();
@@ -65,6 +66,19 @@ const AssessmentsList: React.FC = () => {
   const handleShare = (assessment: Assessment) => {
     setSelectedAssessment(assessment);
     setShareModalOpen(true);
+  };
+
+  const handlePublish = async (assessmentId: string) => {
+    setPublishingId(assessmentId);
+    try {
+      await api.publishAssessment(assessmentId);
+      toast.success('Assessment published successfully');
+      loadAssessments();
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to publish assessment');
+    } finally {
+      setPublishingId(null);
+    }
   };
 
   const filteredAssessments = assessments.filter((a) => {
@@ -186,6 +200,27 @@ const AssessmentsList: React.FC = () => {
                     >
                       Edit
                     </Link>
+                    {!assessment.is_published && (
+                      <button
+                        onClick={() => handlePublish(assessment.id)}
+                        disabled={publishingId === assessment.id}
+                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                      >
+                        {publishingId === assessment.id ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>Publishing...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                            </svg>
+                            <span>Publish</span>
+                          </>
+                        )}
+                      </button>
+                    )}
                     <Link
                       to={`/assessments/${assessment.id}/responses`}
                       className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
