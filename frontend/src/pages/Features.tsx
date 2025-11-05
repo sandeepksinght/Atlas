@@ -52,10 +52,13 @@ const Features: React.FC = () => {
               </li>
             </ul>
           </div>
-          <div className="h-96 bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl flex items-center justify-center">
-            <svg className="w-32 h-32 text-blue-600 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
+          <div className="relative h-96 rounded-3xl overflow-hidden shadow-xl">
+            <img
+              src="https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=1200"
+              alt="AI-powered question generation"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20"></div>
           </div>
         </div>
       </section>
@@ -63,10 +66,13 @@ const Features: React.FC = () => {
       {/* Feature 2 - Templates */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-          <div className="order-2 md:order-1 h-96 bg-gradient-to-br from-purple-100 to-pink-100 rounded-3xl flex items-center justify-center">
-            <svg className="w-32 h-32 text-purple-600 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
-            </svg>
+          <div className="order-2 md:order-1 relative h-96 rounded-3xl overflow-hidden shadow-xl">
+            <img
+              src="https://images.pexels.com/photos/6476589/pexels-photo-6476589.jpeg?auto=compress&cs=tinysrgb&w=1200"
+              alt="Professional templates library"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-pink-600/20"></div>
           </div>
           <div className="order-1 md:order-2">
             <div className="inline-block px-4 py-2 bg-purple-600 text-white rounded-full text-sm font-medium mb-6">
@@ -126,10 +132,13 @@ const Features: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="h-96 bg-gradient-to-br from-green-100 to-emerald-100 rounded-3xl flex items-center justify-center">
-            <svg className="w-32 h-32 text-green-600 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-            </svg>
+          <div className="relative h-96 rounded-3xl overflow-hidden shadow-xl">
+            <img
+              src="https://images.pexels.com/photos/7688336/pexels-photo-7688336.jpeg?auto=compress&cs=tinysrgb&w=1200"
+              alt="Drag and drop interface"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-green-600/20 to-emerald-600/20"></div>
           </div>
         </div>
       </section>
@@ -137,10 +146,13 @@ const Features: React.FC = () => {
       {/* Feature 4 - Analytics */}
       <section className="py-20 px-4">
         <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
-          <div className="order-2 md:order-1 h-96 bg-gradient-to-br from-orange-100 to-red-100 rounded-3xl flex items-center justify-center">
-            <svg className="w-32 h-32 text-orange-600 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-            </svg>
+          <div className="order-2 md:order-1 relative h-96 rounded-3xl overflow-hidden shadow-xl">
+            <img
+              src="https://images.pexels.com/photos/590022/pexels-photo-590022.jpeg?auto=compress&cs=tinysrgb&w=1200"
+              alt="Analytics dashboard and insights"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-600/20 to-red-600/20"></div>
           </div>
           <div className="order-1 md:order-2">
             <div className="inline-block px-4 py-2 bg-orange-600 text-white rounded-full text-sm font-medium mb-6">
@@ -206,10 +218,13 @@ const Features: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="h-96 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-3xl flex items-center justify-center">
-            <svg className="w-32 h-32 text-indigo-600 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-            </svg>
+          <div className="relative h-96 rounded-3xl overflow-hidden shadow-xl">
+            <img
+              src="https://images.pexels.com/photos/7567443/pexels-photo-7567443.jpeg?auto=compress&cs=tinysrgb&w=1200"
+              alt="Project organization and folders"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/20 to-purple-600/20"></div>
           </div>
         </div>
       </section>

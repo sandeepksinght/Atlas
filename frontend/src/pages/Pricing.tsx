@@ -60,8 +60,15 @@ const Pricing: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
-      <section className="pt-32 pb-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="relative pt-32 pb-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.pexels.com/photos/8112180/pexels-photo-8112180.jpeg?auto=compress&cs=tinysrgb&w=1920"
+            alt="Pricing background"
+            className="w-full h-full object-cover opacity-5"
+          />
+        </div>
+        <div className="max-w-4xl mx-auto text-center relative z-10">
           <h1 className="text-6xl md:text-7xl font-bold text-gray-900 mb-8 leading-tight">
             Simple, transparent pricing
           </h1>
