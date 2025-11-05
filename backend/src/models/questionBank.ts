@@ -1,4 +1,4 @@
-import { pool } from '../config/database';
+import pool from '../config/database';
 
 export type QuestionType = 'multiple_choice' | 'single_choice' | 'text' | 'rating' | 'yes_no' | 'dropdown';
 export type DifficultyLevel = 'beginner' | 'intermediate' | 'advanced' | 'expert';
