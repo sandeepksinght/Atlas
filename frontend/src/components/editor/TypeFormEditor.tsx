@@ -252,10 +252,15 @@ export const TypeFormEditor: React.FC = () => {
           is_required: question.required,
         };
 
-        // If question has a numeric ID (existing question), update it, otherwise add new
-        if (question.id && !isNaN(Number(question.id))) {
+        // Check if question ID is a UUID (existing question from DB)
+        // UUIDs have format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+        const isUUID = question.id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(question.id);
+
+        if (isUUID) {
+          // Update existing question
           await api.updateQuestion(question.id, questionData);
         } else {
+          // Add new question
           await api.addQuestion(assessmentId, questionData);
         }
       }
