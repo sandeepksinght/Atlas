@@ -194,7 +194,7 @@ const TakeAssessment: React.FC = () => {
                       <span className="text-red-500 text-sm ml-1">*</span>
                     )}
                   </div>
-                  {question.points > 0 && (
+                  {(assessment?.type === 'quiz' || assessment?.type === 'assessment') && question.points > 0 && (
                     <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
                       {question.points} pts
                     </span>
