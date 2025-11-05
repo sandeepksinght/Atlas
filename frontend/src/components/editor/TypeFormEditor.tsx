@@ -30,6 +30,8 @@ interface Question {
   description?: string;
   min?: number;
   max?: number;
+  correct_answer?: string | string[] | number | boolean | null;
+  points?: number;
 }
 
 interface Assessment {
@@ -44,6 +46,7 @@ export const TypeFormEditor: React.FC = () => {
   const navigate = useNavigate();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
   const [previewMode, setPreviewMode] = useState(false);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -57,11 +60,51 @@ export const TypeFormEditor: React.FC = () => {
         question_text: '',
         question_type: 'short_text',
         required: false,
+        points: 100,
+        correct_answer: null,
       },
     ],
   });
 
   const currentQuestion = assessment.questions[currentQuestionIndex];
+
+  // Load existing assessment
+  useEffect(() => {
+    if (id && id !== 'new') {
+      loadAssessment();
+    }
+  }, [id]);
+
+  const loadAssessment = async () => {
+    try {
+      const response = await api.getAssessment(id!);
+      const data = response.data;
+
+      // Parse questions and ensure correct_answer and points are set
+      const loadedQuestions = (data.questions || []).map((q: any) => ({
+        id: q.id.toString(),
+        question_text: q.question_text,
+        question_type: q.question_type,
+        description: q.description,
+        options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
+        correct_answer: q.correct_answer ? (typeof q.correct_answer === 'string' ? JSON.parse(q.correct_answer) : q.correct_answer) : null,
+        points: q.points || 100,
+        required: q.is_required || false,
+        min: q.min,
+        max: q.max,
+      }));
+
+      setAssessment({
+        id: data.id.toString(),
+        title: data.title,
+        description: data.description,
+        questions: loadedQuestions.length > 0 ? loadedQuestions : assessment.questions,
+      });
+    } catch (error) {
+      console.error('Failed to load assessment:', error);
+      toast.error('Failed to load assessment');
+    }
+  };
 
   const questionTypes = [
     { value: 'short_text', label: 'Short Text', icon: '📝', category: 'Text' },
@@ -113,6 +156,8 @@ export const TypeFormEditor: React.FC = () => {
       question_text: '',
       question_type: 'short_text',
       required: false,
+      points: 100,
+      correct_answer: null,
     };
 
     const newQuestions = [...assessment.questions];
@@ -195,8 +240,27 @@ export const TypeFormEditor: React.FC = () => {
         await api.updateAssessment(assessment.id, assessmentData);
       }
 
-      // Save questions (simplified - you may want to handle this differently)
-      // For now, we'll just show success and navigate
+      // Save questions
+      for (const question of assessment.questions) {
+        const questionData = {
+          question_type: question.question_type,
+          question_text: question.question_text,
+          description: question.description,
+          options: question.options ? JSON.stringify(question.options) : null,
+          correct_answer: question.correct_answer ? JSON.stringify(question.correct_answer) : null,
+          points: question.points || 100,
+          order_index: assessment.questions.indexOf(question),
+          is_required: question.required,
+        };
+
+        // If question has a numeric ID (existing question), update it, otherwise add new
+        if (question.id && !isNaN(Number(question.id))) {
+          await api.updateQuestion(question.id, questionData);
+        } else {
+          await api.addQuestion(assessmentId, questionData);
+        }
+      }
+
       toast.success('Assessment saved successfully!');
       navigate('/dashboard');
     } catch (error) {
@@ -330,6 +394,21 @@ export const TypeFormEditor: React.FC = () => {
             <div className="text-sm text-gray-600 bg-white px-3 py-2 rounded-lg shadow-md">
               {currentQuestionIndex + 1} / {assessment.questions.length}
             </div>
+            {!rightSidebarOpen && (
+              <button
+                onClick={() => setRightSidebarOpen(true)}
+                className="px-4 py-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-all text-gray-700 font-medium"
+                title="Show question settings"
+              >
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  Settings
+                </div>
+              </button>
+            )}
           </div>
         </div>
 
@@ -768,6 +847,171 @@ export const TypeFormEditor: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Right Sidebar - Question Settings */}
+      <div
+        className={cn(
+          'bg-white shadow-2xl transition-all duration-300 flex flex-col border-l border-gray-200',
+          rightSidebarOpen ? 'w-80' : 'w-0'
+        )}
+      >
+        {rightSidebarOpen && (
+          <div className="flex-1 flex flex-col h-full overflow-hidden">
+            {/* Header */}
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-gray-900">Question Settings</h2>
+                <button
+                  onClick={() => setRightSidebarOpen(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Settings Content */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Points Setting */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Points
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="10000"
+                  value={currentQuestion.points || 100}
+                  onChange={(e) => updateQuestion({ points: parseInt(e.target.value) || 100 })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="100"
+                />
+                <p className="text-xs text-gray-500 mt-1">Points awarded for correct answer</p>
+              </div>
+
+              {/* Correct Answer Settings - Only for quiz-compatible question types */}
+              {['single_choice', 'multiple_choice', 'dropdown', 'yes_no', 'true_false'].includes(currentQuestion.question_type) && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Correct Answer
+                  </label>
+
+                  {/* Single Choice, Dropdown, Yes/No, True/False - Single selection */}
+                  {['single_choice', 'dropdown', 'yes_no', 'true_false'].includes(currentQuestion.question_type) && (
+                    <div className="space-y-2">
+                      {(currentQuestion.question_type === 'yes_no' ? ['Yes', 'No'] :
+                        currentQuestion.question_type === 'true_false' ? ['True', 'False'] :
+                        currentQuestion.options || []).map((option, index) => (
+                        <label
+                          key={index}
+                          className="flex items-center space-x-3 p-3 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
+                          style={{
+                            borderColor: currentQuestion.correct_answer === option ? '#3b82f6' : '#e5e7eb',
+                            backgroundColor: currentQuestion.correct_answer === option ? '#eff6ff' : 'white'
+                          }}
+                        >
+                          <input
+                            type="radio"
+                            name="correct-answer"
+                            checked={currentQuestion.correct_answer === option}
+                            onChange={() => updateQuestion({ correct_answer: option })}
+                            className="w-4 h-4 text-blue-600"
+                          />
+                          <span className="text-sm text-gray-700 flex-1">{option}</span>
+                          {currentQuestion.correct_answer === option && (
+                            <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </label>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Multiple Choice - Multiple selection */}
+                  {currentQuestion.question_type === 'multiple_choice' && currentQuestion.options && (
+                    <div className="space-y-2">
+                      {currentQuestion.options.map((option, index) => {
+                        const correctAnswers = Array.isArray(currentQuestion.correct_answer) ? currentQuestion.correct_answer : [];
+                        const isChecked = correctAnswers.includes(option);
+
+                        return (
+                          <label
+                            key={index}
+                            className="flex items-center space-x-3 p-3 border-2 rounded-lg cursor-pointer transition-all hover:bg-gray-50"
+                            style={{
+                              borderColor: isChecked ? '#3b82f6' : '#e5e7eb',
+                              backgroundColor: isChecked ? '#eff6ff' : 'white'
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const newAnswers = e.target.checked
+                                  ? [...correctAnswers, option]
+                                  : correctAnswers.filter((a) => a !== option);
+                                updateQuestion({ correct_answer: newAnswers });
+                              }}
+                              className="w-4 h-4 text-blue-600 rounded"
+                            />
+                            <span className="text-sm text-gray-700 flex-1">{option}</span>
+                            {isChecked && (
+                              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  <p className="text-xs text-gray-500 mt-2">
+                    {currentQuestion.question_type === 'multiple_choice'
+                      ? 'Select all correct answers'
+                      : 'Select the correct answer'}
+                  </p>
+                </div>
+              )}
+
+              {/* Info for non-quiz question types */}
+              {!['single_choice', 'multiple_choice', 'dropdown', 'yes_no', 'true_false'].includes(currentQuestion.question_type) && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-start space-x-2">
+                    <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-medium text-blue-900">Not a quiz question</p>
+                      <p className="text-xs text-blue-700 mt-1">
+                        This question type cannot be auto-scored in live games. Only choice-based questions support scoring.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Quiz Mode Info */}
+              <div className="bg-gradient-to-br from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
+                <div className="flex items-start space-x-2">
+                  <svg className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  <div>
+                    <p className="text-sm font-semibold text-purple-900">Live Game Scoring</p>
+                    <p className="text-xs text-purple-700 mt-1">
+                      Points are calculated based on correctness + speed. Faster correct answers earn bonus points!
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Preview Modal */}
