@@ -180,25 +180,100 @@ export const HostGame: React.FC = () => {
     );
   }
 
+  const handleCopyPin = () => {
+    navigator.clipboard.writeText(pin);
+    toast.success('PIN copied to clipboard!');
+  };
+
+  const handleCopyJoinLink = () => {
+    const joinUrl = `${window.location.origin}/game/join`;
+    navigator.clipboard.writeText(joinUrl);
+    toast.success('Join link copied to clipboard!');
+  };
+
+  const handleCopyFullInstructions = () => {
+    const joinUrl = `${window.location.origin}/game/join`;
+    const instructions = `Join the live game!\n\n1. Go to: ${joinUrl}\n2. Enter PIN: ${pin}\n3. Enter your name\n\nLet's play!`;
+    navigator.clipboard.writeText(instructions);
+    toast.success('Instructions copied! Share with participants.');
+  };
+
   if (status === 'lobby') {
+    const joinUrl = `${window.location.origin}/game/join`;
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-600 to-purple-700 p-4">
         <div className="max-w-6xl mx-auto">
+          {/* Back Button */}
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="mb-4 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-all flex items-center space-x-2 backdrop-blur"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span>Exit Lobby</span>
+          </button>
+
           {/* Header */}
           <div className="bg-white rounded-3xl shadow-2xl p-8 mb-6">
             <div className="text-center">
               <h1 className="text-4xl font-black text-gray-900 mb-2">{gameTitle}</h1>
-              <p className="text-gray-600 mb-6">Waiting for players to join...</p>
+              <p className="text-lg text-gray-600 mb-8">Share the PIN below with your participants</p>
 
               {/* PIN Display */}
-              <div className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-8 shadow-xl">
+              <div className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl p-8 shadow-xl mb-6">
                 <p className="text-white text-sm font-semibold mb-2 opacity-90">Game PIN</p>
-                <p className="text-white text-8xl font-black tracking-wider">{pin}</p>
+                <p className="text-white text-8xl font-black tracking-wider mb-4">{pin}</p>
+                <button
+                  onClick={handleCopyPin}
+                  className="px-6 py-2 bg-white text-purple-700 rounded-xl font-bold hover:bg-gray-100 transition-all shadow-lg"
+                >
+                  📋 Copy PIN
+                </button>
               </div>
 
-              <div className="mt-6">
-                <p className="text-gray-600 mb-2">Join at:</p>
-                <p className="text-2xl font-bold text-blue-600">dstudio.cognostack.com/game/join</p>
+              {/* Instructions Box */}
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 mb-6 border-2 border-blue-200">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">📱 How to Join</h3>
+                <div className="space-y-3 text-left max-w-2xl mx-auto">
+                  <div className="flex items-start space-x-3">
+                    <span className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">Go to the join page</p>
+                      <div className="flex items-center space-x-2 mt-1">
+                        <code className="text-sm bg-white px-3 py-1 rounded border border-gray-300 flex-1">{joinUrl}</code>
+                        <button
+                          onClick={handleCopyJoinLink}
+                          className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-all"
+                        >
+                          Copy
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <span className="flex-shrink-0 w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">2</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">Enter the PIN: <span className="text-purple-600">{pin}</span></p>
+                      <p className="text-sm text-gray-600">Participants will see this on your screen</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-3">
+                    <span className="flex-shrink-0 w-8 h-8 bg-pink-600 text-white rounded-full flex items-center justify-center font-bold">3</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900">Enter a nickname and join</p>
+                      <p className="text-sm text-gray-600">Players will appear below when they join</p>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleCopyFullInstructions}
+                  className="mt-4 px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg"
+                >
+                  📤 Copy All Instructions to Share
+                </button>
               </div>
             </div>
           </div>
