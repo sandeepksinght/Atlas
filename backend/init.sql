@@ -187,6 +187,18 @@ CREATE TABLE IF NOT EXISTS question_analytics (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Summaries table for AI-generated response summaries with version history
+CREATE TABLE IF NOT EXISTS summaries (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    assessment_id UUID NOT NULL REFERENCES assessments(id) ON DELETE CASCADE,
+    summary_type VARCHAR(50) NOT NULL,
+    custom_instructions TEXT,
+    content TEXT NOT NULL,
+    version INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- User Preferences table
 CREATE TABLE IF NOT EXISTS user_preferences (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -218,6 +230,8 @@ CREATE INDEX IF NOT EXISTS idx_question_bank_user_id ON question_bank(user_id);
 CREATE INDEX IF NOT EXISTS idx_question_bank_tags ON question_bank USING GIN(tags);
 CREATE INDEX IF NOT EXISTS idx_question_analytics_question_id ON question_analytics(question_id);
 CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON user_preferences(user_id);
+CREATE INDEX IF NOT EXISTS idx_summaries_assessment_id ON summaries(assessment_id);
+CREATE INDEX IF NOT EXISTS idx_summaries_type_version ON summaries(assessment_id, summary_type, version);
 
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
