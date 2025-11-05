@@ -24,6 +24,11 @@ import BlogPost from './pages/BlogPost';
 import Help from './pages/Help';
 import HowTo from './pages/HowTo';
 import Contact from './pages/Contact';
+import Features from './pages/Features';
+import Pricing from './pages/Pricing';
+import About from './pages/About';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 
 // Layout wrapper with sidebar for authenticated routes
 const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -50,6 +55,11 @@ const App: React.FC = () => {
             <Route path="/" element={<><Navbar /><Landing /></>} />
             <Route path="/login" element={<><Navbar /><Login /></>} />
             <Route path="/register" element={<><Navbar /><Register /></>} />
+            <Route path="/features" element={<><Navbar /><Features /></>} />
+            <Route path="/pricing" element={<><Navbar /><Pricing /></>} />
+            <Route path="/about" element={<><Navbar /><About /></>} />
+            <Route path="/privacy" element={<><Navbar /><Privacy /></>} />
+            <Route path="/terms" element={<><Navbar /><Terms /></>} />
             <Route path="/blog" element={<><Navbar /><Blog /></>} />
             <Route path="/blog/:id" element={<><Navbar /><BlogPost /></>} />
             <Route path="/help" element={<><Navbar /><Help /></>} />
