@@ -20,6 +20,9 @@ import { TemplatesGallery } from './pages/TemplatesGallery';
 import { AnalyticsDashboard } from './pages/AnalyticsDashboard';
 import { AssessmentWizard } from './components/wizard/AssessmentWizard';
 import { TypeFormEditor } from './components/editor/TypeFormEditor';
+import { JoinGame } from './pages/game/JoinGame';
+import { PlayGame } from './pages/game/PlayGame';
+import { HostGame } from './pages/game/HostGame';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import Help from './pages/Help';
@@ -174,6 +177,20 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <TypeFormEditor />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Live Game Routes - Full screen, no sidebar */}
+            <Route path="/game/join" element={<JoinGame />} />
+
+            <Route path="/game/play" element={<PlayGame />} />
+
+            <Route
+              path="/game/host/:sessionId"
+              element={
+                <ProtectedRoute>
+                  <HostGame />
                 </ProtectedRoute>
               }
             />

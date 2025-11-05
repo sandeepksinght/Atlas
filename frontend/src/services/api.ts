@@ -130,4 +130,18 @@ export const createFromTemplate = (id: string) => api.post(`/api/templates/${id}
 export const sendContactMessage = (data: { name: string; email: string; subject: string; message: string }) =>
   api.post('/api/contact', data);
 
+// Live Game
+export const createGameSession = (data: { assessment_id?: string; title: string; settings?: any }) =>
+  api.post('/api/game/create', data);
+
+export const getGameSession = (id: string) => api.get(`/api/game/session/${id}`);
+
+export const joinGameByPin = (pin: string) => api.get(`/api/game/join/${pin}`);
+
+export const getGameParticipants = (sessionId: string) =>
+  api.get(`/api/game/session/${sessionId}/participants`);
+
+export const getGameLeaderboard = (sessionId: string) =>
+  api.get(`/api/game/session/${sessionId}/leaderboard`);
+
 export default api;
