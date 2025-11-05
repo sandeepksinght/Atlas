@@ -36,10 +36,10 @@ import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 
 // Layout wrapper with sidebar for authenticated routes
-const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AuthenticatedLayout: React.FC<{ children: React.ReactNode; sidebarCollapsed?: boolean }> = ({ children, sidebarCollapsed }) => {
   return (
     <div className="flex h-screen overflow-hidden">
-      <ProjectsSidebar />
+      <ProjectsSidebar defaultCollapsed={sidebarCollapsed} />
       <div className="flex-1 overflow-y-auto">
         {children}
       </div>
@@ -123,7 +123,7 @@ const App: React.FC = () => {
               path="/assessments/create"
               element={
                 <ProtectedRoute>
-                  <AuthenticatedLayout>
+                  <AuthenticatedLayout sidebarCollapsed={true}>
                     <TypeFormEditor />
                   </AuthenticatedLayout>
                 </ProtectedRoute>
@@ -134,7 +134,7 @@ const App: React.FC = () => {
               path="/assessments/:id"
               element={
                 <ProtectedRoute>
-                  <AuthenticatedLayout>
+                  <AuthenticatedLayout sidebarCollapsed={true}>
                     <TypeFormEditor />
                   </AuthenticatedLayout>
                 </ProtectedRoute>
@@ -163,12 +163,12 @@ const App: React.FC = () => {
               }
             />
 
-            {/* TypeForm-style Editor - with sidebar */}
+            {/* TypeForm-style Editor - with sidebar collapsed by default */}
             <Route
               path="/editor/new"
               element={
                 <ProtectedRoute>
-                  <AuthenticatedLayout>
+                  <AuthenticatedLayout sidebarCollapsed={true}>
                     <TypeFormEditor />
                   </AuthenticatedLayout>
                 </ProtectedRoute>
@@ -179,7 +179,7 @@ const App: React.FC = () => {
               path="/editor/:id"
               element={
                 <ProtectedRoute>
-                  <AuthenticatedLayout>
+                  <AuthenticatedLayout sidebarCollapsed={true}>
                     <TypeFormEditor />
                   </AuthenticatedLayout>
                 </ProtectedRoute>

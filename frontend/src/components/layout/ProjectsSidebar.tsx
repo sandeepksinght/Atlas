@@ -15,9 +15,13 @@ interface Project {
   level?: number;
 }
 
-export const ProjectsSidebar: React.FC = () => {
+interface ProjectsSidebarProps {
+  defaultCollapsed?: boolean;
+}
+
+export const ProjectsSidebar: React.FC<ProjectsSidebarProps> = ({ defaultCollapsed = false }) => {
   const [projects, setProjects] = useState<Project[]>([]);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const location = useLocation();
