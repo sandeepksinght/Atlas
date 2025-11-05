@@ -91,10 +91,10 @@ export const ProjectsSidebar: React.FC = () => {
             {/* Quick Actions */}
             <div className="space-y-1">
               <Link
-                to="/"
+                to="/dashboard"
                 className={cn(
                   'flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors',
-                  location.pathname === '/'
+                  location.pathname === '/dashboard'
                     ? 'bg-blue-50 text-blue-700'
                     : 'text-gray-700 hover:bg-gray-100'
                 )}

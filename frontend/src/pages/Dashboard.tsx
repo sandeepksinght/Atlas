@@ -27,40 +27,66 @@ const Dashboard: React.FC = () => {
 
   const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      quiz: 'bg-blue-100 text-blue-800',
-      survey: 'bg-green-100 text-green-800',
-      poll: 'bg-purple-100 text-purple-800',
-      assessment: 'bg-orange-100 text-orange-800',
+      quiz: 'bg-blue-50 text-blue-700 border-blue-200',
+      survey: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      poll: 'bg-purple-50 text-purple-700 border-purple-200',
+      assessment: 'bg-amber-50 text-amber-700 border-amber-200',
     };
-    return colors[type] || 'bg-gray-100 text-gray-800';
+    return colors[type] || 'bg-gray-50 text-gray-700 border-gray-200';
   };
+
+  const publishedCount = assessments.filter(a => a.is_published).length;
+  const draftCount = assessments.filter(a => !a.is_published).length;
+  const thisWeekCount = assessments.filter(a => {
+    const createdDate = new Date(a.created_at);
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    return createdDate >= weekAgo;
+  }).length;
+
+  // Mock data for activity feed - in production this would come from API
+  const recentActivity = [
+    { id: 1, type: 'response', message: '12 new responses', assessment: 'Employee Satisfaction Q4', time: '2 hours ago' },
+    { id: 2, type: 'publish', message: 'Assessment published', assessment: 'Product Feedback Survey', time: '5 hours ago' },
+    { id: 3, type: 'create', message: 'Assessment created', assessment: 'Team Skills Assessment', time: '1 day ago' },
+    { id: 4, type: 'response', message: '8 new responses', assessment: 'Customer NPS Survey', time: '1 day ago' },
+  ];
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="text-gray-600 text-sm">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Welcome back, {user?.name}!
+          <h1 className="text-3xl font-bold text-gray-900 mb-1">
+            Welcome back, {user?.name}
           </h1>
-          <p className="text-gray-600">Manage your assessments and view responses</p>
+          <p className="text-gray-600">Here's what's happening with your assessments today</p>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-xl shadow-md">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm">Total Assessments</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">{assessments.length}</p>
+        {/* Top Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+          {/* Total Assessments */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 mb-1">Total Assessments</p>
+                <p className="text-3xl font-bold text-gray-900">{assessments.length}</p>
+                <p className="text-xs text-gray-500 mt-2">
+                  <span className="text-emerald-600 font-medium">+{thisWeekCount}</span> this week
+                </p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
                 <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
@@ -68,48 +94,52 @@ const Dashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-md">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm">Published</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">
-                  {assessments.filter(a => a.is_published).length}
+          {/* Published */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 mb-1">Published</p>
+                <p className="text-3xl font-bold text-gray-900">{publishedCount}</p>
+                <p className="text-xs text-gray-500 mt-2">
+                  {assessments.length > 0 ? Math.round((publishedCount / assessments.length) * 100) : 0}% of total
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-xl shadow-md">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm">Drafts</p>
-                <p className="text-3xl font-bold text-gray-900 mt-1">
-                  {assessments.filter(a => !a.is_published).length}
-                </p>
+          {/* Drafts */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-600 mb-1">Drafts</p>
+                <p className="text-3xl font-bold text-gray-900">{draftCount}</p>
+                <p className="text-xs text-gray-500 mt-2">Ready to publish</p>
               </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </div>
             </div>
           </div>
 
+          {/* Create New - CTA Card */}
           <Link
             to="/assessments/create"
-            className="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-xl shadow-md text-white hover:from-blue-700 hover:to-blue-800 transition"
+            className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-6 text-white hover:from-blue-700 hover:to-blue-800 transition-all hover:shadow-lg group"
           >
-            <div className="flex items-center justify-between h-full">
-              <div>
-                <p className="text-white/90 text-sm">Create New</p>
-                <p className="text-2xl font-bold mt-1">Assessment</p>
+            <div className="flex items-start justify-between h-full">
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-100 mb-1">Quick Action</p>
+                <p className="text-2xl font-bold">Create New</p>
+                <p className="text-xs text-blue-100 mt-2">Start fresh assessment</p>
               </div>
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+              <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
@@ -118,58 +148,236 @@ const Dashboard: React.FC = () => {
           </Link>
         </div>
 
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">Recent Assessments</h2>
-            <Link to="/assessments" className="text-blue-600 hover:text-blue-700 font-medium">
-              View All
-            </Link>
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Left Column - Recent Assessments */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Recent Assessments Card */}
+            <div className="bg-white rounded-xl border border-gray-200">
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Recent Assessments</h2>
+                    <p className="text-sm text-gray-600 mt-0.5">Your latest work</p>
+                  </div>
+                  <Link
+                    to="/assessments"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center space-x-1"
+                  >
+                    <span>View all</span>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </Link>
+                </div>
+              </div>
+
+              <div className="p-6">
+                {assessments.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <p className="text-gray-900 font-medium mb-1">No assessments yet</p>
+                    <p className="text-gray-600 text-sm mb-4">Create your first assessment to get started</p>
+                    <Link
+                      to="/assessments/create"
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
+                    >
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      Create Assessment
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {assessments.slice(0, 5).map((assessment) => (
+                      <Link
+                        key={assessment.id}
+                        to={`/assessments/${assessment.id}`}
+                        className="block p-4 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all group"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <h3 className="text-base font-semibold text-gray-900 truncate group-hover:text-blue-700 transition">
+                                {assessment.title}
+                              </h3>
+                              <span className={`px-2 py-0.5 rounded-md text-xs font-medium border ${getTypeColor(assessment.type)}`}>
+                                {assessment.type}
+                              </span>
+                            </div>
+                            {assessment.description && (
+                              <p className="text-sm text-gray-600 line-clamp-1 mb-2">{assessment.description}</p>
+                            )}
+                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                              <span className="flex items-center space-x-1">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <span>{new Date(assessment.created_at).toLocaleDateString()}</span>
+                              </span>
+                              {assessment.is_published && (
+                                <span className="flex items-center space-x-1 text-emerald-600">
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                  <span className="font-medium">Published</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-600 transition ml-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                          </svg>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-white rounded-xl border border-gray-200 p-5">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {assessments.filter(a => a.type === 'survey').length}
+                    </p>
+                    <p className="text-sm text-gray-600">Surveys</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl border border-gray-200 p-5">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {assessments.filter(a => a.type === 'quiz').length}
+                    </p>
+                    <p className="text-sm text-gray-600">Quizzes</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {assessments.length === 0 ? (
-            <div className="text-center py-12">
-              <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <p className="text-gray-600 mb-4">No assessments yet</p>
-              <Link
-                to="/assessments/create"
-                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-              >
-                Create Your First Assessment
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {assessments.slice(0, 5).map((assessment) => (
-                <Link
-                  key={assessment.id}
-                  to={`/assessments/${assessment.id}`}
-                  className="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition"
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900">{assessment.title}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getTypeColor(assessment.type)}`}>
-                          {assessment.type}
-                        </span>
-                        {assessment.is_published && (
-                          <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            Published
-                          </span>
+          {/* Right Column - Activity Feed */}
+          <div className="space-y-6">
+            {/* Activity Feed */}
+            <div className="bg-white rounded-xl border border-gray-200">
+              <div className="p-6 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
+                <p className="text-sm text-gray-600 mt-0.5">Latest updates</p>
+              </div>
+              <div className="p-6">
+                <div className="space-y-4">
+                  {recentActivity.map((activity) => (
+                    <div key={activity.id} className="flex items-start space-x-3">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        activity.type === 'response' ? 'bg-blue-50' :
+                        activity.type === 'publish' ? 'bg-emerald-50' :
+                        'bg-purple-50'
+                      }`}>
+                        {activity.type === 'response' && (
+                          <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                          </svg>
+                        )}
+                        {activity.type === 'publish' && (
+                          <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        )}
+                        {activity.type === 'create' && (
+                          <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
                         )}
                       </div>
-                      <p className="text-gray-600 text-sm">{assessment.description}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900">{activity.message}</p>
+                        <p className="text-sm text-gray-600 truncate">{activity.assessment}</p>
+                        <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                      </div>
                     </div>
-                    <div className="text-right text-sm text-gray-500">
-                      {new Date(assessment.created_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                  ))}
+                </div>
+              </div>
             </div>
-          )}
+
+            {/* Quick Links */}
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Links</h2>
+              <div className="space-y-2">
+                <Link
+                  to="/templates"
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">Browse Templates</span>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+
+                <Link
+                  to="/wizard"
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">AI Wizard</span>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+
+                <Link
+                  to="/assessments"
+                  className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition group"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-emerald-50 rounded-lg flex items-center justify-center">
+                      <svg className="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                      </svg>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900">All Assessments</span>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400 group-hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
