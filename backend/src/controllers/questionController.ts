@@ -7,6 +7,7 @@ import { questionGenerationQueue, fileProcessingQueue, urlFetchQueue } from '../
 import * as JobModel from '../models/Job';
 import axios from 'axios';
 import multer from 'multer';
+import { extractTextFromDocument, isSupportedFormat, isFormRecognizerConfigured } from '../services/formRecognizer';
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
@@ -137,23 +138,93 @@ export const uploadFileForQuestions = async (req: AuthRequest, res: Response) =>
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const fileContent = req.file.buffer.toString('utf-8');
+    const fileName = req.file.originalname;
     const numberOfQuestions = parseInt(req.body.numberOfQuestions) || 10;
+
+    // Check if file format is supported by Form Recognizer
+    if (!isSupportedFormat(fileName)) {
+      return res.status(400).json({
+        error: 'Unsupported file format. Supported formats: PDF, PNG, JPG, JPEG, TIFF, BMP, DOCX, XLSX, PPTX'
+      });
+    }
+
+    // Check if Form Recognizer is configured
+    if (!isFormRecognizerConfigured()) {
+      // Fallback to simple text extraction for plain text files
+      if (fileName.endsWith('.txt')) {
+        const fileContent = req.file.buffer.toString('utf-8');
+
+        const job = await JobModel.createJob(userId, 'file-processing');
+        await fileProcessingQueue.add({
+          jobId: job.id,
+          assessmentId,
+          fileContent,
+          fileName,
+          assessmentType: assessment.type,
+          numberOfQuestions,
+        });
+
+        return res.status(202).json({ message: 'File processing started', jobId: job.id });
+      }
+
+      return res.status(503).json({
+        error: 'Azure Form Recognizer is not configured. Please set FORM_RECOGNIZER_ENDPOINT and FORM_RECOGNIZER_KEY.'
+      });
+    }
+
+    console.log(`Processing file: ${fileName} (${req.file.size} bytes)`);
+
+    // Extract text using Azure Form Recognizer
+    let fileContent: string;
+    try {
+      const extracted = await extractTextFromDocument(req.file.buffer, fileName);
+      fileContent = extracted.text;
+
+      // If tables are present, append them in a readable format
+      if (extracted.tables && extracted.tables.length > 0) {
+        fileContent += '\n\n--- Tables ---\n';
+        extracted.tables.forEach((table, index) => {
+          fileContent += `\nTable ${index + 1} (${table.rowCount}x${table.columnCount}):\n`;
+
+          // Convert table cells to a grid format
+          const grid: string[][] = Array(table.rowCount).fill(null).map(() => Array(table.columnCount).fill(''));
+          table.cells.forEach(cell => {
+            grid[cell.rowIndex][cell.columnIndex] = cell.content;
+          });
+
+          // Format as markdown-style table
+          grid.forEach(row => {
+            fileContent += row.join(' | ') + '\n';
+          });
+        });
+      }
+
+      console.log(`Successfully extracted ${fileContent.length} characters from ${fileName}`);
+    } catch (extractError: any) {
+      console.error('Azure Form Recognizer extraction error:', extractError);
+      return res.status(500).json({
+        error: `Failed to extract text from document: ${extractError.message}`
+      });
+    }
 
     // Create job
     const job = await JobModel.createJob(userId, 'file-processing');
 
-    // Add to queue
+    // Add to queue with extracted content
     await fileProcessingQueue.add({
       jobId: job.id,
       assessmentId,
       fileContent,
-      fileName: req.file.originalname,
+      fileName,
       assessmentType: assessment.type,
       numberOfQuestions,
     });
 
-    res.status(202).json({ message: 'File processing started', jobId: job.id });
+    res.status(202).json({
+      message: 'File processing started',
+      jobId: job.id,
+      extractedLength: fileContent.length
+    });
   } catch (error: any) {
     console.error('Upload file error:', error);
     res.status(500).json({ error: 'Failed to process file' });
