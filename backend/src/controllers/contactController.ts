@@ -1,11 +1,19 @@
 import { Request, Response } from 'express';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend only if API key is provided
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 export const sendContactMessage = async (req: Request, res: Response) => {
   try {
     const { name, email, subject, message } = req.body;
+
+    // Check if email service is configured
+    if (!resend) {
+      return res.status(503).json({
+        error: 'Email service not configured. Please set RESEND_API_KEY in environment variables.'
+      });
+    }
 
     // Validate required fields
     if (!name || !email || !subject || !message) {
