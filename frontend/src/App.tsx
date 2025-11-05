@@ -6,6 +6,7 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
+import { ProjectsSidebar } from './components/layout/ProjectsSidebar';
 
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -15,6 +16,21 @@ import AssessmentsList from './pages/AssessmentsList';
 import CreateAssessment from './pages/CreateAssessment';
 import ViewResponses from './pages/ViewResponses';
 import TakeAssessment from './pages/TakeAssessment';
+import { TemplatesGallery } from './pages/TemplatesGallery';
+import { AnalyticsDashboard } from './pages/AnalyticsDashboard';
+import { AssessmentWizard } from './components/wizard/AssessmentWizard';
+
+// Layout wrapper with sidebar for authenticated routes
+const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <div className="flex h-screen overflow-hidden">
+      <ProjectsSidebar />
+      <div className="flex-1 overflow-y-auto">
+        {children}
+      </div>
+    </div>
+  );
+};
 
 const App: React.FC = () => {
   return (
@@ -22,66 +38,100 @@ const App: React.FC = () => {
       <Router>
         <div className="min-h-screen bg-gray-50">
           <Routes>
-            {/* Public route for taking assessments - no navbar */}
+            {/* Public route for taking assessments - no navbar, no sidebar */}
             <Route path="/take/:token" element={<TakeAssessment />} />
 
-            {/* All other routes with navbar */}
+            {/* Public routes with navbar only */}
+            <Route path="/" element={<><Navbar /><Landing /></>} />
+            <Route path="/login" element={<><Navbar /><Login /></>} />
+            <Route path="/register" element={<><Navbar /><Register /></>} />
+
+            {/* Protected routes with sidebar */}
             <Route
-              path="/*"
+              path="/dashboard"
               element={
-                <>
-                  <Navbar />
-                  <Routes>
-                    <Route path="/" element={<Landing />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <Dashboard />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              }
+            />
 
-                    <Route
-                      path="/dashboard"
-                      element={
-                        <ProtectedRoute>
-                          <Dashboard />
-                        </ProtectedRoute>
-                      }
-                    />
+            <Route
+              path="/templates"
+              element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <TemplatesGallery />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              }
+            />
 
-                    <Route
-                      path="/assessments"
-                      element={
-                        <ProtectedRoute>
-                          <AssessmentsList />
-                        </ProtectedRoute>
-                      }
-                    />
+            <Route
+              path="/wizard"
+              element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <AssessmentWizard onComplete={(id) => window.location.href = `/assessments/${id}`} />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              }
+            />
 
-                    <Route
-                      path="/assessments/create"
-                      element={
-                        <ProtectedRoute>
-                          <CreateAssessment />
-                        </ProtectedRoute>
-                      }
-                    />
+            <Route
+              path="/assessments"
+              element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <AssessmentsList />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              }
+            />
 
-                    <Route
-                      path="/assessments/:id"
-                      element={
-                        <ProtectedRoute>
-                          <CreateAssessment />
-                        </ProtectedRoute>
-                      }
-                    />
+            <Route
+              path="/assessments/create"
+              element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <CreateAssessment />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              }
+            />
 
-                    <Route
-                      path="/assessments/:id/responses"
-                      element={
-                        <ProtectedRoute>
-                          <ViewResponses />
-                        </ProtectedRoute>
-                      }
-                    />
-                  </Routes>
-                </>
+            <Route
+              path="/assessments/:id"
+              element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <CreateAssessment />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/assessments/:id/responses"
+              element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <ViewResponses />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/assessments/:id/analytics"
+              element={
+                <ProtectedRoute>
+                  <AuthenticatedLayout>
+                    <AnalyticsDashboard />
+                  </AuthenticatedLayout>
+                </ProtectedRoute>
               }
             />
           </Routes>

@@ -5,6 +5,8 @@ import { Assessment, Question, AssessmentType, QuestionType } from '../types';
 import { toast } from 'react-toastify';
 import QuestionCard from '../components/QuestionCard';
 import AssessmentSettings from '../components/AssessmentSettings';
+import { DraggableQuestionList } from '../components/DraggableQuestionList';
+import { StickySaveBar } from '../components/StickySaveBar';
 
 const CreateAssessment: React.FC = () => {
   const { id } = useParams();
@@ -18,6 +20,22 @@ const CreateAssessment: React.FC = () => {
   const [type, setType] = useState<AssessmentType>('quiz');
   const [showResults, setShowResults] = useState(true);
 
+  // Mark as unsaved when fields change
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleDescriptionChange = (value: string) => {
+    setDescription(value);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleTypeChange = (value: AssessmentType) => {
+    setType(value);
+    setHasUnsavedChanges(true);
+  };
+
   const [activeTab, setActiveTab] = useState<'manual' | 'text' | 'file' | 'url'>('manual');
   const [aiContent, setAiContent] = useState('');
   const [aiUrl, setAiUrl] = useState('');
@@ -25,12 +43,26 @@ const CreateAssessment: React.FC = () => {
   const [numberOfQuestions, setNumberOfQuestions] = useState(10);
   const [jobStatus, setJobStatus] = useState<any>(null);
   const [showSettings, setShowSettings] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
     if (id) {
       loadAssessment();
     }
   }, [id]);
+
+  // Keyboard shortcut for save (Cmd/Ctrl+S)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [title, description, type, showResults]);
 
   const loadAssessment = async () => {
     try {
@@ -65,10 +97,14 @@ const CreateAssessment: React.FC = () => {
       if (id) {
         await api.updateAssessment(id, data);
         toast.success('Assessment updated successfully');
+        setLastSaved(new Date());
+        setHasUnsavedChanges(false);
       } else {
         const response = await api.createAssessment(data);
         const newId = response.data.id;
         toast.success('Assessment created successfully');
+        setLastSaved(new Date());
+        setHasUnsavedChanges(false);
         navigate(`/assessments/${newId}`);
       }
     } catch (error) {
@@ -307,6 +343,26 @@ const CreateAssessment: React.FC = () => {
     }
   };
 
+  const handleReorderQuestions = async (reorderedQuestions: Question[]) => {
+    setQuestions(reorderedQuestions);
+    setHasUnsavedChanges(true);
+
+    // Update order on backend
+    try {
+      await Promise.all(
+        reorderedQuestions.map((q, idx) =>
+          api.updateQuestion(q.id, { ...q, order_index: idx })
+        )
+      );
+      toast.success('Questions reordered');
+      setLastSaved(new Date());
+      setHasUnsavedChanges(false);
+    } catch (error) {
+      toast.error('Failed to update question order');
+      loadAssessment(); // Reload to restore original order
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-8">
@@ -324,7 +380,7 @@ const CreateAssessment: React.FC = () => {
                 <input
                   type="text"
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  onChange={(e) => handleTitleChange(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="Enter assessment title"
                 />
@@ -334,7 +390,7 @@ const CreateAssessment: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                 <textarea
                   value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  onChange={(e) => handleDescriptionChange(e.target.value)}
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                   placeholder="Enter assessment description"
@@ -345,7 +401,7 @@ const CreateAssessment: React.FC = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Type *</label>
                 <select
                   value={type}
-                  onChange={(e) => setType(e.target.value as AssessmentType)}
+                  onChange={(e) => handleTypeChange(e.target.value as AssessmentType)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 >
                   <option value="quiz">Quiz (with scoring)</option>
@@ -578,27 +634,20 @@ const CreateAssessment: React.FC = () => {
                 )}
               </div>
 
-              <div className="space-y-6">
-                {questions.map((question, index) => (
-                  <QuestionCard
-                    key={question.id}
-                    question={question}
-                    index={index}
-                    assessmentType={type}
-                    onUpdate={handleUpdateQuestion}
-                    onDelete={handleDeleteQuestion}
-                    onDuplicate={handleDuplicateQuestion}
-                    onMoveUp={index > 0 ? () => handleMoveQuestion(index, 'up') : undefined}
-                    onMoveDown={index < questions.length - 1 ? () => handleMoveQuestion(index, 'down') : undefined}
-                  />
-                ))}
-
-                {questions.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    No questions yet. Add questions manually or generate them with AI.
-                  </div>
-                )}
-              </div>
+              {questions.length > 0 ? (
+                <DraggableQuestionList
+                  questions={questions}
+                  assessmentType={type}
+                  onUpdate={handleUpdateQuestion}
+                  onDelete={handleDeleteQuestion}
+                  onDuplicate={handleDuplicateQuestion}
+                  onReorder={handleReorderQuestions}
+                />
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  No questions yet. Add questions manually or generate them with AI.
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -610,6 +659,18 @@ const CreateAssessment: React.FC = () => {
           settings={assessment.settings || {}}
           onSave={handleSaveSettings}
           onClose={() => setShowSettings(false)}
+        />
+      )}
+
+      {/* Sticky Save Bar */}
+      {id && (
+        <StickySaveBar
+          onSave={handleSave}
+          onPublish={handlePublish}
+          isSaving={loading}
+          isPublished={assessment?.is_published || false}
+          hasUnsavedChanges={hasUnsavedChanges}
+          lastSaved={lastSaved}
         />
       )}
     </div>
