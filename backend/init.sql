@@ -49,8 +49,25 @@ CREATE TABLE IF NOT EXISTS assessments (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Question type enum
-CREATE TYPE IF NOT EXISTS question_type AS ENUM ('multiple_choice', 'single_choice', 'text', 'rating', 'yes_no', 'dropdown');
+-- Question type enum - Extended for TypeForm-style editor
+CREATE TYPE IF NOT EXISTS question_type AS ENUM (
+    'short_text',
+    'long_text',
+    'email',
+    'phone',
+    'number',
+    'url',
+    'date',
+    'multiple_choice',
+    'single_choice',
+    'dropdown',
+    'yes_no',
+    'true_false',
+    'rating',
+    'opinion_scale',
+    'statement',
+    'text'  -- Legacy support
+);
 CREATE TYPE IF NOT EXISTS difficulty_level AS ENUM ('beginner', 'intermediate', 'advanced', 'expert');
 CREATE TYPE IF NOT EXISTS blooms_taxonomy AS ENUM ('remember', 'understand', 'apply', 'analyze', 'evaluate', 'create');
 
