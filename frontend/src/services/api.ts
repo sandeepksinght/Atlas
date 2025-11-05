@@ -53,8 +53,17 @@ export const getAssessmentResponses = (id: string) =>
 export const chatAboutResponses = (id: string, question: string, chatHistory?: any[]) =>
   api.post(`/api/assessments/${id}/responses/chat`, { question, chatHistory });
 
-export const generateResponsesSummary = (id: string, summaryType: string, customInstructions?: string) =>
-  api.post(`/api/assessments/${id}/responses/summary`, { summaryType, customInstructions });
+export const generateResponsesSummary = (id: string, summaryType: string, customInstructions?: string, saveToDatabase?: boolean) =>
+  api.post(`/api/assessments/${id}/responses/summary`, { summaryType, customInstructions, saveToDatabase });
+
+export const checkExistingSummary = (id: string, summaryType: string) =>
+  api.get(`/api/assessments/${id}/responses/summary/check`, { params: { summaryType } });
+
+export const getSummaryVersions = (id: string, summaryType: string) =>
+  api.get(`/api/assessments/${id}/responses/summary/versions`, { params: { summaryType } });
+
+export const getAllSummaries = (id: string) =>
+  api.get(`/api/assessments/${id}/summaries`);
 
 // Questions
 export const addQuestion = (assessmentId: string, data: any) =>

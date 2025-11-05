@@ -5,6 +5,7 @@ import { Response, Assessment, Question } from '../types';
 import { toast } from 'react-toastify';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import * as XLSX from 'xlsx';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -33,6 +34,8 @@ const ViewResponses: React.FC = () => {
   const [customInstructions, setCustomInstructions] = useState('');
   const [generatedSummary, setGeneratedSummary] = useState('');
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [existingSummary, setExistingSummary] = useState<any>(null);
+  const [showReplaceDialog, setShowReplaceDialog] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -162,18 +165,40 @@ const ViewResponses: React.FC = () => {
     }
   };
 
-  const handleGenerateSummary = async () => {
+  const generateNewSummary = async (saveToDatabase: boolean = true) => {
     setSummaryLoading(true);
     setGeneratedSummary('');
+    setShowReplaceDialog(false);
 
     try {
-      const response = await api.generateResponsesSummary(id!, summaryType, customInstructions);
+      const response = await api.generateResponsesSummary(id!, summaryType, customInstructions, saveToDatabase);
       setGeneratedSummary(response.data.summary);
+      if (saveToDatabase && response.data.savedSummary) {
+        toast.success('Summary generated and saved!');
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to generate summary');
     } finally {
       setSummaryLoading(false);
     }
+  };
+
+  const handleGenerateSummary = async () => {
+    // First check if summary exists
+    try {
+      const checkResponse = await api.checkExistingSummary(id!, summaryType);
+      if (checkResponse.data.exists && checkResponse.data.summary) {
+        setExistingSummary(checkResponse.data.summary);
+        setShowReplaceDialog(true);
+        return;
+      }
+    } catch (error) {
+      console.error('Error checking existing summary:', error);
+      // Continue with generation if check fails
+    }
+
+    // If no existing summary, generate new one
+    await generateNewSummary(true);
   };
 
   const getScoreDistribution = () => {
@@ -441,7 +466,13 @@ const ViewResponses: React.FC = () => {
             {chatMessages.map((message, index) => (
               <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-900'}`}>
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  {message.role === 'assistant' ? (
+                    <ReactMarkdown className="text-sm prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-900 prose-li:text-gray-900 prose-strong:text-gray-900">
+                      {message.content}
+                    </ReactMarkdown>
+                  ) : (
+                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                  )}
                 </div>
               </div>
             ))}
@@ -531,9 +562,54 @@ const ViewResponses: React.FC = () => {
                 </p>
               </div>
 
+              {showReplaceDialog && existingSummary && (
+                <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-start">
+                    <svg className="w-6 h-6 text-yellow-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-yellow-900 mb-2">Existing Summary Found</h4>
+                      <p className="text-sm text-yellow-800 mb-2">
+                        A summary of type "{summaryType}" already exists (Version {existingSummary.version}, created on {new Date(existingSummary.created_at).toLocaleDateString()}).
+                      </p>
+                      <p className="text-sm text-yellow-800 mb-4">
+                        Would you like to replace it or create a new version?
+                      </p>
+                      <div className="flex space-x-3">
+                        <button
+                          onClick={() => generateNewSummary(true)}
+                          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm"
+                        >
+                          Create New Version (v{existingSummary.version + 1})
+                        </button>
+                        <button
+                          onClick={() => {
+                            setGeneratedSummary(existingSummary.content);
+                            setShowReplaceDialog(false);
+                          }}
+                          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm"
+                        >
+                          View Existing
+                        </button>
+                        <button
+                          onClick={() => {
+                            setShowReplaceDialog(false);
+                            setExistingSummary(null);
+                          }}
+                          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <button
                 onClick={handleGenerateSummary}
-                disabled={summaryLoading}
+                disabled={summaryLoading || showReplaceDialog}
                 className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
               >
                 {summaryLoading ? (
@@ -555,7 +631,7 @@ const ViewResponses: React.FC = () => {
                 <div className="mt-6 p-6 bg-gray-50 rounded-lg">
                   <h3 className="font-semibold text-gray-900 mb-3">Generated Summary</h3>
                   <div className="prose prose-sm max-w-none">
-                    <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">{generatedSummary}</pre>
+                    <ReactMarkdown>{generatedSummary}</ReactMarkdown>
                   </div>
                   <button
                     onClick={() => {

@@ -4,6 +4,7 @@ import * as AssessmentModel from '../models/Assessment';
 import * as QuestionModel from '../models/Question';
 import * as ShareLinkModel from '../models/ShareLink';
 import * as ResponseModel from '../models/Response';
+import * as SummaryModel from '../models/Summary';
 
 export const createAssessment = async (req: AuthRequest, res: Response) => {
   try {
@@ -238,7 +239,7 @@ export const generateSummary = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const userId = req.user!.userId;
-    const { summaryType, customInstructions } = req.body;
+    const { summaryType, customInstructions, saveToDatabase } = req.body;
 
     const assessment = await AssessmentModel.findAssessmentById(id);
 
@@ -271,9 +272,101 @@ export const generateSummary = async (req: AuthRequest, res: Response) => {
       customInstructions
     );
 
-    res.json({ summary });
+    // Save to database if requested
+    let savedSummary = null;
+    if (saveToDatabase) {
+      savedSummary = await SummaryModel.createSummary(
+        id,
+        summaryType || 'overview',
+        customInstructions || null,
+        summary,
+        userId
+      );
+    }
+
+    res.json({ summary, savedSummary });
   } catch (error: any) {
     console.error('Generate summary error:', error);
     res.status(500).json({ error: error.message || 'Failed to generate summary' });
+  }
+};
+
+export const checkExistingSummary = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { summaryType } = req.query;
+    const userId = req.user!.userId;
+
+    const assessment = await AssessmentModel.findAssessmentById(id);
+
+    if (!assessment) {
+      return res.status(404).json({ error: 'Assessment not found' });
+    }
+
+    if (assessment.user_id !== userId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const existingSummary = await SummaryModel.findLatestSummary(
+      id,
+      summaryType as string || 'overview'
+    );
+
+    res.json({ exists: !!existingSummary, summary: existingSummary });
+  } catch (error: any) {
+    console.error('Check existing summary error:', error);
+    res.status(500).json({ error: 'Failed to check existing summary' });
+  }
+};
+
+export const getSummaryVersions = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { summaryType } = req.query;
+    const userId = req.user!.userId;
+
+    const assessment = await AssessmentModel.findAssessmentById(id);
+
+    if (!assessment) {
+      return res.status(404).json({ error: 'Assessment not found' });
+    }
+
+    if (assessment.user_id !== userId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const versions = await SummaryModel.findSummaryVersions(
+      id,
+      summaryType as string || 'overview'
+    );
+
+    res.json(versions);
+  } catch (error: any) {
+    console.error('Get summary versions error:', error);
+    res.status(500).json({ error: 'Failed to get summary versions' });
+  }
+};
+
+export const getAllSummaries = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.userId;
+
+    const assessment = await AssessmentModel.findAssessmentById(id);
+
+    if (!assessment) {
+      return res.status(404).json({ error: 'Assessment not found' });
+    }
+
+    if (assessment.user_id !== userId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const summaries = await SummaryModel.findSummariesByAssessmentId(id);
+
+    res.json(summaries);
+  } catch (error: any) {
+    console.error('Get all summaries error:', error);
+    res.status(500).json({ error: 'Failed to get summaries' });
   }
 };

@@ -14,5 +14,8 @@ router.post('/:id/share', authenticate, assessmentController.generateShareLink);
 router.get('/:id/responses', authenticate, assessmentController.getAssessmentResponses);
 router.post('/:id/responses/chat', authenticate, assessmentController.chatAboutResponses);
 router.post('/:id/responses/summary', authenticate, assessmentController.generateSummary);
+router.get('/:id/responses/summary/check', authenticate, assessmentController.checkExistingSummary);
+router.get('/:id/responses/summary/versions', authenticate, assessmentController.getSummaryVersions);
+router.get('/:id/summaries', authenticate, assessmentController.getAllSummaries);
 
 export default router;
