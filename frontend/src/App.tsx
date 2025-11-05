@@ -123,9 +123,7 @@ const App: React.FC = () => {
               path="/assessments/create"
               element={
                 <ProtectedRoute>
-                  <AuthenticatedLayout>
-                    <CreateAssessment />
-                  </AuthenticatedLayout>
+                  <TypeFormEditor />
                 </ProtectedRoute>
               }
             />
@@ -134,9 +132,7 @@ const App: React.FC = () => {
               path="/assessments/:id"
               element={
                 <ProtectedRoute>
-                  <AuthenticatedLayout>
-                    <CreateAssessment />
-                  </AuthenticatedLayout>
+                  <TypeFormEditor />
                 </ProtectedRoute>
               }
             />
