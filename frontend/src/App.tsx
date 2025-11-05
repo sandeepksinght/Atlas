@@ -23,6 +23,7 @@ import { TypeFormEditor } from './components/editor/TypeFormEditor';
 import { JoinGame } from './pages/game/JoinGame';
 import { PlayGame } from './pages/game/PlayGame';
 import { HostGame } from './pages/game/HostGame';
+import { CreateGameSession } from './pages/game/CreateGameSession';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import Help from './pages/Help';
@@ -185,6 +186,15 @@ const App: React.FC = () => {
             <Route path="/game/join" element={<JoinGame />} />
 
             <Route path="/game/play" element={<PlayGame />} />
+
+            <Route
+              path="/game/create"
+              element={
+                <ProtectedRoute>
+                  <CreateGameSession />
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               path="/game/host/:sessionId"

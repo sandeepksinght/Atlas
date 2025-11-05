@@ -40,7 +40,7 @@ export const HostGame: React.FC = () => {
 
   const loadGameSession = async () => {
     try {
-      const response = await api.get(`/game/session/${sessionId}`);
+      const response = await api.getGameSession(sessionId!);
       const session = response.data;
 
       setGameTitle(session.title);

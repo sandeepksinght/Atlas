@@ -21,7 +21,7 @@ export const JoinGame: React.FC = () => {
 
     setLoading(true);
     try {
-      const response = await api.get(`/game/join/${pin}`);
+      const response = await api.joinGameByPin(pin);
       setGameTitle(response.data.title);
       setStep('nickname');
     } catch (error: any) {
