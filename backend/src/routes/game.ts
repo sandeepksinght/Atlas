@@ -1,5 +1,5 @@
 import express from 'express';
-import { auth, AuthRequest } from '../middleware/auth';
+import { authenticate, AuthRequest } from '../middleware/auth';
 import { GameSessionModel } from '../models/GameSession';
 import { findQuestionsByAssessmentId } from '../models/Question';
 import { Response } from 'express';
@@ -7,7 +7,7 @@ import { Response } from 'express';
 const router = express.Router();
 
 // Create a new game session
-router.post('/create', auth, async (req: AuthRequest, res: Response) => {
+router.post('/create', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.user!.userId;
     const { assessment_id, title, settings } = req.body;
@@ -54,7 +54,7 @@ router.get('/join/:pin', async (req, res) => {
 });
 
 // Get session details (for host)
-router.get('/session/:id', auth, async (req: AuthRequest, res: Response) => {
+router.get('/session/:id', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const session = await GameSessionModel.findById(id);
@@ -72,7 +72,7 @@ router.get('/session/:id', auth, async (req: AuthRequest, res: Response) => {
     const participants = await GameSessionModel.getParticipants(id);
 
     // Get questions if assessment_id exists
-    let questions = [];
+    let questions: any[] = [];
     if (session.assessment_id) {
       questions = await findQuestionsByAssessmentId(session.assessment_id);
     }
@@ -89,7 +89,7 @@ router.get('/session/:id', auth, async (req: AuthRequest, res: Response) => {
 });
 
 // Get participants in a session
-router.get('/session/:id/participants', auth, async (req: AuthRequest, res: Response) => {
+router.get('/session/:id/participants', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const participants = await GameSessionModel.getParticipants(id);
