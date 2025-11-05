@@ -53,8 +53,11 @@ const App: React.FC = () => {
 
             {/* Public routes with navbar only */}
             <Route path="/" element={<><Navbar /><Landing /></>} />
-            <Route path="/login" element={<><Navbar /><Login /></>} />
-            <Route path="/register" element={<><Navbar /><Register /></>} />
+
+            {/* Auth routes without navbar - they have their own layout */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+
             <Route path="/features" element={<><Navbar /><Features /></>} />
             <Route path="/pricing" element={<><Navbar /><Pricing /></>} />
             <Route path="/about" element={<><Navbar /><About /></>} />
