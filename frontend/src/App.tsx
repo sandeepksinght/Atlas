@@ -40,7 +40,7 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode; sidebarCollapse
   return (
     <div className="flex h-screen overflow-hidden">
       <ProjectsSidebar defaultCollapsed={sidebarCollapsed} />
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto h-full">
         {children}
       </div>
     </div>

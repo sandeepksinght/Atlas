@@ -279,7 +279,7 @@ export const TypeFormEditor: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-hidden flex">
+    <div className="h-full w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 overflow-hidden flex">
       {/* Sidebar */}
       <div
         className={cn(
