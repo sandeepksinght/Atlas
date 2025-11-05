@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import * as api from '../services/api';
 import { Assessment } from '../types';
 import { toast } from 'react-toastify';
 
 const AssessmentsList: React.FC = () => {
+  const navigate = useNavigate();
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'published' | 'draft'>('all');
+  const [creatingGameFor, setCreatingGameFor] = useState<string | null>(null);
 
   useEffect(() => {
     loadAssessments();
@@ -33,6 +35,27 @@ const AssessmentsList: React.FC = () => {
       loadAssessments();
     } catch (error) {
       toast.error('Failed to delete assessment');
+    }
+  };
+
+  const handleCreateLiveGame = async (assessment: Assessment) => {
+    setCreatingGameFor(assessment.id);
+    try {
+      const response = await api.createGameSession({
+        assessment_id: assessment.id,
+        title: `${assessment.title} - Live Game`,
+        settings: {
+          timeLimit: 20,
+          showLeaderboard: true,
+        },
+      });
+
+      const sessionId = response.data.id;
+      toast.success('Live game created!');
+      navigate(`/game/host/${sessionId}`);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || 'Failed to create live game');
+      setCreatingGameFor(null);
     }
   };
 
@@ -161,6 +184,28 @@ const AssessmentsList: React.FC = () => {
                     >
                       Responses
                     </Link>
+                    {assessment.is_published && (
+                      <button
+                        onClick={() => handleCreateLiveGame(assessment)}
+                        disabled={creatingGameFor === assessment.id}
+                        className="px-4 py-2 bg-gradient-to-r from-pink-600 to-red-600 text-white rounded-lg hover:from-pink-700 hover:to-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+                      >
+                        {creatingGameFor === assessment.id ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>Creating...</span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Live Game</span>
+                          </>
+                        )}
+                      </button>
+                    )}
                     <button
                       onClick={() => handleDelete(assessment.id)}
                       className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
