@@ -8,6 +8,7 @@ import responseRoutes from './routes/responses';
 import jobRoutes from './routes/jobs';
 import projectRoutes from './routes/projects';
 import templateRoutes from './routes/templates';
+import contactRoutes from './routes/contact';
 import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -38,6 +39,7 @@ app.use('/api/assessments', assessmentRoutes);
 app.use('/api/assessments', questionRoutes);
 app.use('/api/responses', responseRoutes);
 app.use('/api/jobs', jobRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Error handler
 app.use(errorHandler);

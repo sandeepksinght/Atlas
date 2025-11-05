@@ -19,6 +19,11 @@ import TakeAssessment from './pages/TakeAssessment';
 import { TemplatesGallery } from './pages/TemplatesGallery';
 import { AnalyticsDashboard } from './pages/AnalyticsDashboard';
 import { AssessmentWizard } from './components/wizard/AssessmentWizard';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
+import Help from './pages/Help';
+import HowTo from './pages/HowTo';
+import Contact from './pages/Contact';
 
 // Layout wrapper with sidebar for authenticated routes
 const AuthenticatedLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -45,6 +50,11 @@ const App: React.FC = () => {
             <Route path="/" element={<><Navbar /><Landing /></>} />
             <Route path="/login" element={<><Navbar /><Login /></>} />
             <Route path="/register" element={<><Navbar /><Register /></>} />
+            <Route path="/blog" element={<><Navbar /><Blog /></>} />
+            <Route path="/blog/:id" element={<><Navbar /><BlogPost /></>} />
+            <Route path="/help" element={<><Navbar /><Help /></>} />
+            <Route path="/how-to" element={<><Navbar /><HowTo /></>} />
+            <Route path="/contact" element={<><Navbar /><Contact /></>} />
 
             {/* Protected routes with sidebar */}
             <Route

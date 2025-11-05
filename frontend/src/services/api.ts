@@ -126,4 +126,8 @@ export const getPopularTemplates = (limit?: number) =>
 
 export const createFromTemplate = (id: string) => api.post(`/api/templates/${id}/use`);
 
+// Contact
+export const sendContactMessage = (data: { name: string; email: string; subject: string; message: string }) =>
+  api.post('/api/contact', data);
+
 export default api;
