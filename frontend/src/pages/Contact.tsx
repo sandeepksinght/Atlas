@@ -227,7 +227,7 @@ const Contact: React.FC = () => {
             </p>
             <div className="grid gap-4 text-left">
               <details className="bg-gray-50 rounded-lg p-6 cursor-pointer">
-                <summary className="font-semibold text-gray-900">How do I get started with Atlas?</summary>
+                <summary className="font-semibold text-gray-900">How do I get started with dStudio?</summary>
                 <p className="mt-4 text-gray-600">
                   Simply sign up for a free account, and you'll be guided through creating your first assessment in minutes. No credit card required!
                 </p>
@@ -235,7 +235,7 @@ const Contact: React.FC = () => {
               <details className="bg-gray-50 rounded-lg p-6 cursor-pointer">
                 <summary className="font-semibold text-gray-900">Is there a free plan?</summary>
                 <p className="mt-4 text-gray-600">
-                  Yes! Atlas offers a generous free forever plan with all essential features. You can upgrade anytime as your needs grow.
+                  Yes! dStudio offers a generous free forever plan with all essential features. You can upgrade anytime as your needs grow.
                 </p>
               </details>
               <details className="bg-gray-50 rounded-lg p-6 cursor-pointer">

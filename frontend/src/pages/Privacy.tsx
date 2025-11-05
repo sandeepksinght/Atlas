@@ -42,16 +42,16 @@ const Privacy: React.FC = () => {
           <h3 className="text-2xl font-semibold text-gray-900 mt-8 mb-4">Usage Data</h3>
           <p className="text-gray-600 leading-relaxed mb-6">
             We collect basic usage data like which features you use and when. This helps us improve
-            Atlas and fix bugs. This data is anonymized and never sold to third parties.
+            dStudio and fix bugs. This data is anonymized and never sold to third parties.
           </p>
 
           <h2 className="text-3xl font-bold text-gray-900 mt-12 mb-6">How we use your information</h2>
           <ul className="space-y-3 mb-8">
             <li className="text-gray-600 leading-relaxed">
-              <strong>To provide our service:</strong> We use your data to power Atlas and deliver the features you use
+              <strong>To provide our service:</strong> We use your data to power dStudio and deliver the features you use
             </li>
             <li className="text-gray-600 leading-relaxed">
-              <strong>To improve our product:</strong> We analyze usage patterns to make Atlas better
+              <strong>To improve our product:</strong> We analyze usage patterns to make dStudio better
             </li>
             <li className="text-gray-600 leading-relaxed">
               <strong>To communicate with you:</strong> We'll send important updates and respond to your support requests

@@ -36,9 +36,9 @@ const Navbar: React.FC = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-all group-hover:scale-105">
-              <span className="text-white font-black text-xl">A</span>
+              <span className="text-white font-black text-xl">dS</span>
             </div>
-            <span className={`text-2xl font-black ${logoTextClasses}`}>Atlas</span>
+            <span className={`text-2xl font-black ${logoTextClasses}`}>dStudio</span>
           </Link>
 
           {/* Desktop Navigation */}

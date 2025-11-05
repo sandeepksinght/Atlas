@@ -28,8 +28,8 @@ export const sendContactMessage = async (req: Request, res: Response) => {
 
     // Send email via Resend
     const { data, error } = await resend.emails.send({
-      from: 'Atlas Contact Form <onboarding@resend.dev>', // Change to your verified domain
-      to: process.env.CONTACT_EMAIL || 'support@atlas.com',
+      from: 'dStudio Contact Form <onboarding@resend.dev>', // Change to your verified domain
+      to: process.env.CONTACT_EMAIL || 'support@dstudio.cognostack.com',
       reply_to: email,
       subject: `[Contact Form] ${subject}`,
       html: `
@@ -50,7 +50,7 @@ export const sendContactMessage = async (req: Request, res: Response) => {
           <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;" />
 
           <p style="color: #6b7280; font-size: 12px;">
-            This message was sent from the Atlas contact form.<br/>
+            This message was sent from the dStudio contact form.<br/>
             Reply directly to this email to respond to ${name}.
           </p>
         </div>

@@ -19,7 +19,7 @@ const About: React.FC = () => {
             <span className="text-blue-600">of assessments</span>
           </h1>
           <p className="text-2xl text-gray-600 leading-relaxed">
-            Atlas makes creating surveys, quizzes, and assessments as simple as having a conversation.
+            dStudio makes creating surveys, quizzes, and assessments as simple as having a conversation.
           </p>
         </div>
       </section>
@@ -29,16 +29,16 @@ const About: React.FC = () => {
         <div className="max-w-3xl mx-auto prose prose-lg prose-gray">
           <h2 className="text-4xl font-bold text-gray-900 mb-6">Our story</h2>
           <p className="text-xl text-gray-600 leading-relaxed mb-6">
-            Atlas was born from a simple frustration: creating good assessments takes too long.
+            dStudio was born from a simple frustration: creating good assessments takes too long.
             Educators spend hours writing questions. HR teams struggle with engagement surveys.
             Marketers need quick feedback but don't have the tools.
           </p>
           <p className="text-xl text-gray-600 leading-relaxed mb-6">
-            We believed there had to be a better way. So we built Atlas – a platform that combines
+            We believed there had to be a better way. So we built dStudio – a platform that combines
             the power of AI with intuitive design to make assessment creation effortless.
           </p>
           <p className="text-xl text-gray-600 leading-relaxed">
-            Today, thousands of users trust Atlas to create better assessments, faster.
+            Today, thousands of users trust dStudio to create better assessments, faster.
             And we're just getting started.
           </p>
         </div>
@@ -191,7 +191,7 @@ const About: React.FC = () => {
               to="/register"
               className="inline-block px-10 py-5 bg-blue-500 text-white text-xl rounded-2xl hover:bg-blue-400 transition-all font-medium"
             >
-              Try Atlas free
+              Try dStudio free
             </Link>
           </div>
         </div>

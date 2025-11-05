@@ -1,8 +1,8 @@
-# Atlas - AI-Powered Survey & Quiz Platform
+# dStudio - AI-Powered Survey & Quiz Platform
 
-Atlas is a modern, enterprise-grade web application for creating surveys, quizzes, and assessments. It features AI-powered question generation using Azure OpenAI, beautiful UI/UX, and comprehensive analytics.
+dStudio is a modern, enterprise-grade web application for creating surveys, quizzes, and assessments. It features AI-powered question generation using Azure OpenAI, beautiful UI/UX, and comprehensive analytics.
 
-![Atlas Platform](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
+![dStudio Platform](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 ![Docker](https://img.shields.io/badge/Docker-Enabled-blue)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
 
@@ -46,8 +46,8 @@ Atlas is a modern, enterprise-grade web application for creating surveys, quizze
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/Atlas.git
-cd Atlas
+git clone https://github.com/yourusername/dStudio.git
+cd dStudio
 ```
 
 ### 2. Configure Environment Variables
@@ -196,7 +196,7 @@ Once all services are running:
 ### Project Structure
 
 ```
-Atlas/
+dStudio/
 ├── backend/
 │   ├── src/
 │   │   ├── config/         # Database and Redis configuration

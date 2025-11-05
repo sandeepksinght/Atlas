@@ -36,9 +36,9 @@ const Login: React.FC = () => {
         <div className="relative z-10">
           <Link to="/" className="flex items-center space-x-3 group">
             <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-              <span className="text-blue-600 font-black text-2xl">A</span>
+              <span className="text-blue-600 font-black text-2xl">dS</span>
             </div>
-            <span className="text-white font-black text-2xl">Atlas</span>
+            <span className="text-white font-black text-2xl">dStudio</span>
           </Link>
         </div>
 
@@ -47,7 +47,7 @@ const Login: React.FC = () => {
             Create smarter<br />assessments with AI
           </h2>
           <p className="text-blue-100 text-xl leading-relaxed mb-8">
-            Join thousands of educators, businesses, and researchers using Atlas to build better surveys and quizzes.
+            Join thousands of educators, businesses, and researchers using dStudio to build better surveys and quizzes.
           </p>
 
           <div className="space-y-4">
@@ -95,14 +95,14 @@ const Login: React.FC = () => {
           {/* Mobile Logo */}
           <Link to="/" className="flex lg:hidden items-center space-x-3 mb-8">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-black text-xl">A</span>
+              <span className="text-white font-black text-xl">dS</span>
             </div>
-            <span className="text-gray-900 font-black text-xl">Atlas</span>
+            <span className="text-gray-900 font-black text-xl">dStudio</span>
           </Link>
 
           <div className="mb-8">
             <h1 className="text-4xl font-black text-gray-900 mb-2">Welcome back</h1>
-            <p className="text-gray-600 text-lg">Sign in to your Atlas account</p>
+            <p className="text-gray-600 text-lg">Sign in to your dStudio account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">

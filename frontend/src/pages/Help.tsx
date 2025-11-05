@@ -12,7 +12,7 @@ const helpArticles: HelpArticle[] = [
   // Getting Started
   { id: '1', category: 'Getting Started', title: 'Creating Your First Assessment', description: 'Learn how to create your first quiz or survey in minutes' },
   { id: '2', category: 'Getting Started', title: 'Understanding Assessment Types', description: 'Learn about quizzes, surveys, polls, and assessments' },
-  { id: '3', category: 'Getting Started', title: 'Navigating the Dashboard', description: 'A complete guide to the Atlas dashboard' },
+  { id: '3', category: 'Getting Started', title: 'Navigating the Dashboard', description: 'A complete guide to the dStudio dashboard' },
 
   // AI Features
   { id: '4', category: 'AI Features', title: 'Generating Questions from Text', description: 'Use AI to automatically create questions from your content' },
@@ -71,7 +71,7 @@ const Help: React.FC = () => {
               Help Center
             </h1>
             <p className="text-xl text-blue-100 mb-10">
-              Find answers to your questions and learn how to make the most of Atlas
+              Find answers to your questions and learn how to make the most of dStudio
             </p>
 
             {/* Search */}

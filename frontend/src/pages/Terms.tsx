@@ -27,7 +27,7 @@ const Terms: React.FC = () => {
 
           <h2 className="text-3xl font-bold text-gray-900 mt-12 mb-6">Acceptance of Terms</h2>
           <p className="text-gray-600 leading-relaxed mb-6">
-            By using Atlas, you agree to these terms. If you don't agree, please don't use our service.
+            By using dStudio, you agree to these terms. If you don't agree, please don't use our service.
             These terms apply to all users, whether you're on a free or paid plan.
           </p>
 
@@ -35,7 +35,7 @@ const Terms: React.FC = () => {
 
           <h3 className="text-2xl font-semibold text-gray-900 mt-8 mb-4">Account Creation</h3>
           <p className="text-gray-600 leading-relaxed mb-6">
-            You must be at least 16 years old to use Atlas. You're responsible for keeping your account
+            You must be at least 16 years old to use dStudio. You're responsible for keeping your account
             credentials secure. Don't share your password with others.
           </p>
 
@@ -49,7 +49,7 @@ const Terms: React.FC = () => {
           <p className="text-gray-600 leading-relaxed mb-4">You agree not to:</p>
           <ul className="space-y-3 mb-8">
             <li className="text-gray-600 leading-relaxed">
-              Use Atlas for any illegal purpose or to violate any laws
+              Use dStudio for any illegal purpose or to violate any laws
             </li>
             <li className="text-gray-600 leading-relaxed">
               Harass, abuse, or harm other users
@@ -67,17 +67,17 @@ const Terms: React.FC = () => {
               Scrape or copy content using automated means
             </li>
             <li className="text-gray-600 leading-relaxed">
-              Resell or redistribute Atlas without permission
+              Resell or redistribute dStudio without permission
             </li>
           </ul>
 
           <h2 className="text-3xl font-bold text-gray-900 mt-12 mb-6">Your Content</h2>
           <p className="text-gray-600 leading-relaxed mb-6">
-            You own all the content you create on Atlas – your assessments, questions, and responses.
+            You own all the content you create on dStudio – your assessments, questions, and responses.
             We never claim ownership of your content.
           </p>
           <p className="text-gray-600 leading-relaxed mb-6">
-            By using Atlas, you grant us permission to store and display your content as necessary
+            By using dStudio, you grant us permission to store and display your content as necessary
             to provide the service. For example, we need to show your questions to the people taking
             your assessments.
           </p>
@@ -108,7 +108,7 @@ const Terms: React.FC = () => {
 
           <h2 className="text-3xl font-bold text-gray-900 mt-12 mb-6">Service Availability</h2>
           <p className="text-gray-600 leading-relaxed mb-6">
-            We work hard to keep Atlas available 24/7, but we can't guarantee 100% uptime. We may need
+            We work hard to keep dStudio available 24/7, but we can't guarantee 100% uptime. We may need
             to perform maintenance or make updates. We'll try to notify you in advance for scheduled downtime.
           </p>
 
@@ -124,7 +124,7 @@ const Terms: React.FC = () => {
 
           <h2 className="text-3xl font-bold text-gray-900 mt-12 mb-6">Limitation of Liability</h2>
           <p className="text-gray-600 leading-relaxed mb-6">
-            Atlas is provided "as is" without warranties of any kind. We're not liable for any damages
+            dStudio is provided "as is" without warranties of any kind. We're not liable for any damages
             arising from your use of the service, including but not limited to lost data, lost profits,
             or business interruption.
           </p>
@@ -134,14 +134,14 @@ const Terms: React.FC = () => {
 
           <h2 className="text-3xl font-bold text-gray-900 mt-12 mb-6">Indemnification</h2>
           <p className="text-gray-600 leading-relaxed mb-6">
-            You agree to indemnify and hold us harmless from any claims arising from your use of Atlas
+            You agree to indemnify and hold us harmless from any claims arising from your use of dStudio
             or violation of these terms.
           </p>
 
           <h2 className="text-3xl font-bold text-gray-900 mt-12 mb-6">Changes to Terms</h2>
           <p className="text-gray-600 leading-relaxed mb-6">
             We may update these terms from time to time. We'll notify you of significant changes by
-            email and by posting a notice in the app. Continuing to use Atlas after changes means you
+            email and by posting a notice in the app. Continuing to use dStudio after changes means you
             accept the new terms.
           </p>
 

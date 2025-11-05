@@ -80,13 +80,13 @@ export const ProjectsSidebar: React.FC = () => {
             <Link to="/dashboard" className="flex items-center space-x-3 group">
               <div className="relative">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-blue-500/50 transition-all">
-                  <span className="text-white font-bold text-lg">A</span>
+                  <span className="text-white font-bold text-lg">dS</span>
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900"></div>
               </div>
               <div>
-                <span className="font-bold text-xl text-white group-hover:text-blue-400 transition">Atlas</span>
-                <p className="text-xs text-slate-400">Assessment Platform</p>
+                <span className="font-bold text-xl text-white group-hover:text-blue-400 transition">dStudio</span>
+                <p className="text-xs text-slate-400">by CognoStack</p>
               </div>
             </Link>
             <button
@@ -101,7 +101,7 @@ export const ProjectsSidebar: React.FC = () => {
         ) : (
           <div className="flex flex-col items-center space-y-2">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 via-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-lg">A</span>
+              <span className="text-white font-bold text-lg">dS</span>
             </div>
             <button
               onClick={() => setCollapsed(!collapsed)}

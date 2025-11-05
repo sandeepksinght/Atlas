@@ -89,7 +89,7 @@ const Blog: React.FC = () => {
       <section className="bg-gradient-to-br from-blue-600 to-blue-700 py-20">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-5xl md:text-6xl font-bold text-white mb-6">
-            Atlas Blog
+            dStudio Blog
           </h1>
           <p className="text-xl text-blue-100 max-w-2xl mx-auto">
             Insights, tips, and best practices for creating better assessments
@@ -171,7 +171,7 @@ const Blog: React.FC = () => {
             Ready to create your first assessment?
           </h2>
           <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join thousands of users who trust Atlas for their surveys and quizzes
+            Join thousands of users who trust dStudio for their surveys and quizzes
           </p>
           <Link
             to="/register"

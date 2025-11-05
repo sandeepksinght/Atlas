@@ -79,7 +79,7 @@ const BlogPost: React.FC = () => {
 
           <h2 className="text-3xl font-bold text-gray-900 mt-12 mb-4">5. Make It Mobile-Friendly</h2>
           <p className="text-gray-700 leading-relaxed mb-6">
-            Ensure your assessments work seamlessly on all devices. With Atlas, all assessments are automatically responsive and mobile-optimized.
+            Ensure your assessments work seamlessly on all devices. With dStudio, all assessments are automatically responsive and mobile-optimized.
           </p>
 
           <h2 className="text-3xl font-bold text-gray-900 mt-12 mb-4">6. Set Appropriate Time Limits</h2>
@@ -110,7 +110,7 @@ const BlogPost: React.FC = () => {
           <div className="bg-blue-50 border-l-4 border-blue-600 p-6 my-12 rounded-r-lg">
             <h3 className="text-xl font-bold text-gray-900 mb-2">Pro Tip</h3>
             <p className="text-gray-700">
-              Use Atlas's AI-powered question generation to quickly create diverse, high-quality questions from your existing content. This saves time while maintaining assessment quality.
+              Use dStudio's AI-powered question generation to quickly create diverse, high-quality questions from your existing content. This saves time while maintaining assessment quality.
             </p>
           </div>
 
@@ -120,14 +120,14 @@ const BlogPost: React.FC = () => {
           </p>
 
           <p className="text-gray-700 leading-relaxed mb-6">
-            Ready to put these practices into action? <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium underline">Start creating your first assessment with Atlas today</Link>.
+            Ready to put these practices into action? <Link to="/register" className="text-blue-600 hover:text-blue-700 font-medium underline">Start creating your first assessment with dStudio today</Link>.
           </p>
         </div>
 
         {/* CTA */}
         <div className="mt-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-8 text-center text-white">
           <h3 className="text-2xl font-bold mb-4">Ready to Create Your Assessment?</h3>
-          <p className="text-blue-100 mb-6">Join thousands who trust Atlas for their surveys and quizzes</p>
+          <p className="text-blue-100 mb-6">Join thousands who trust dStudio for their surveys and quizzes</p>
           <Link
             to="/register"
             className="inline-block px-8 py-3 bg-white text-blue-600 rounded-xl hover:bg-blue-50 transition-all font-medium shadow-lg"

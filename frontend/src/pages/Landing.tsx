@@ -451,7 +451,7 @@ const Landing: React.FC = () => {
             </span>
           </h2>
           <p className="text-2xl text-gray-600 mb-12 max-w-3xl mx-auto">
-            Join 10,000+ users creating better assessments with Atlas.
+            Join 10,000+ users creating better assessments with dStudio.
             Start free—no credit card required.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
@@ -484,9 +484,9 @@ const Landing: React.FC = () => {
             <div className="md:col-span-2">
               <div className="flex items-center mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center mr-3">
-                  <span className="text-white font-black text-2xl">A</span>
+                  <span className="text-white font-black text-2xl">dS</span>
                 </div>
-                <span className="text-white font-black text-3xl">Atlas</span>
+                <span className="text-white font-black text-3xl">dStudio</span>
               </div>
               <p className="text-gray-400 leading-relaxed max-w-sm mb-6">
                 The smartest way to create surveys, quizzes, and assessments. Powered by AI. Built for humans.
@@ -543,7 +543,7 @@ const Landing: React.FC = () => {
           </div>
 
           <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-gray-500">&copy; 2024 Atlas. All rights reserved.</p>
+            <p className="text-sm text-gray-500">&copy; 2024 dStudio by CognoStack. All rights reserved.</p>
             <p className="text-sm text-gray-500">Made with ❤️ for educators, businesses & researchers</p>
           </div>
         </div>

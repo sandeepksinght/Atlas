@@ -14,7 +14,7 @@ const guides: Guide[] = [
   {
     id: '1',
     title: 'Create Your First Quiz in 5 Minutes',
-    description: 'A step-by-step guide to creating and publishing your first quiz using Atlas',
+    description: 'A step-by-step guide to creating and publishing your first quiz using dStudio',
     difficulty: 'Beginner',
     duration: '5 min',
     icon: 'rocket'
@@ -100,7 +100,7 @@ const HowTo: React.FC = () => {
             How-To Guides
           </h1>
           <p className="text-xl text-blue-100 max-w-2xl mx-auto">
-            Step-by-step tutorials to master Atlas and create amazing assessments
+            Step-by-step tutorials to master dStudio and create amazing assessments
           </p>
         </div>
       </section>

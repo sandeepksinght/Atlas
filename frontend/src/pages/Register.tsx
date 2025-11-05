@@ -39,7 +39,7 @@ const Register: React.FC = () => {
             <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
               <span className="text-purple-600 font-black text-2xl">A</span>
             </div>
-            <span className="text-white font-black text-2xl">Atlas</span>
+            <span className="text-white font-black text-2xl">dStudio</span>
           </Link>
         </div>
 
@@ -85,7 +85,7 @@ const Register: React.FC = () => {
               <img src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100" alt="User testimonial" className="w-12 h-12 rounded-full object-cover" />
               <div>
                 <p className="text-white text-sm mb-2 italic">
-                  "Atlas transformed how we create employee surveys. The AI feature alone saves us 5+ hours every week."
+                  "dStudio transformed how we create employee surveys. The AI feature alone saves us 5+ hours every week."
                 </p>
                 <p className="text-purple-200 text-xs font-bold">Sarah Chen, HR Director</p>
               </div>
@@ -100,9 +100,9 @@ const Register: React.FC = () => {
           {/* Mobile Logo */}
           <Link to="/" className="flex lg:hidden items-center space-x-3 mb-8">
             <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-black text-xl">A</span>
+              <span className="text-white font-black text-xl">dS</span>
             </div>
-            <span className="text-gray-900 font-black text-xl">Atlas</span>
+            <span className="text-gray-900 font-black text-xl">dStudio</span>
           </Link>
 
           <div className="mb-8">
