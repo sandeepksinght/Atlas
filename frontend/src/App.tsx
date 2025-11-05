@@ -123,7 +123,9 @@ const App: React.FC = () => {
               path="/assessments/create"
               element={
                 <ProtectedRoute>
-                  <TypeFormEditor />
+                  <AuthenticatedLayout>
+                    <TypeFormEditor />
+                  </AuthenticatedLayout>
                 </ProtectedRoute>
               }
             />
@@ -132,7 +134,9 @@ const App: React.FC = () => {
               path="/assessments/:id"
               element={
                 <ProtectedRoute>
-                  <TypeFormEditor />
+                  <AuthenticatedLayout>
+                    <TypeFormEditor />
+                  </AuthenticatedLayout>
                 </ProtectedRoute>
               }
             />
@@ -159,12 +163,14 @@ const App: React.FC = () => {
               }
             />
 
-            {/* TypeForm-style Editor - Full screen, no sidebar */}
+            {/* TypeForm-style Editor - with sidebar */}
             <Route
               path="/editor/new"
               element={
                 <ProtectedRoute>
-                  <TypeFormEditor />
+                  <AuthenticatedLayout>
+                    <TypeFormEditor />
+                  </AuthenticatedLayout>
                 </ProtectedRoute>
               }
             />
@@ -173,7 +179,9 @@ const App: React.FC = () => {
               path="/editor/:id"
               element={
                 <ProtectedRoute>
-                  <TypeFormEditor />
+                  <AuthenticatedLayout>
+                    <TypeFormEditor />
+                  </AuthenticatedLayout>
                 </ProtectedRoute>
               }
             />
