@@ -22,7 +22,7 @@ export const sendContactMessage = async (req: Request, res: Response) => {
     const { data, error } = await resend.emails.send({
       from: 'Atlas Contact Form <onboarding@resend.dev>', // Change to your verified domain
       to: process.env.CONTACT_EMAIL || 'support@atlas.com',
-      replyTo: email,
+      reply_to: email,
       subject: `[Contact Form] ${subject}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
