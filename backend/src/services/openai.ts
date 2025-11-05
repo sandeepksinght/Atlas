@@ -94,3 +94,96 @@ export const generateQuestionsFromFile = async (
   // For text files, use AI to generate questions
   return generateQuestionsFromContent(fileContent, assessmentType, numberOfQuestions);
 };
+
+export const chatAboutResponses = async (
+  responsesData: any,
+  userQuestion: string,
+  chatHistory: Array<{role: string; content: string}> = []
+): Promise<string> => {
+  const openAIClient = getClient();
+
+  if (!openAIClient) {
+    throw new Error('Azure OpenAI is not configured. Please set the required environment variables.');
+  }
+
+  const systemPrompt = `You are a helpful data analyst assistant. You have access to assessment response data and can answer questions about it.
+The responses data includes questions, answers, scores, and respondent information.
+Provide clear, concise, and insightful answers based on the data provided.`;
+
+  const dataContext = `Here is the responses data you can analyze:
+${JSON.stringify(responsesData, null, 2)}`;
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    { role: 'user', content: dataContext },
+    ...chatHistory,
+    { role: 'user', content: userQuestion }
+  ];
+
+  try {
+    const response = await openAIClient.getChatCompletions(
+      deploymentName,
+      messages,
+      {
+        temperature: 0.7,
+        maxTokens: 1000,
+      }
+    );
+
+    return response.choices[0]?.message?.content || 'I apologize, I could not generate a response.';
+  } catch (error: any) {
+    console.error('Error in chat about responses:', error);
+    throw new Error(`Failed to process chat request: ${error.message}`);
+  }
+};
+
+export const generateResponsesSummary = async (
+  responsesData: any,
+  summaryType: string,
+  customInstructions?: string
+): Promise<string> => {
+  const openAIClient = getClient();
+
+  if (!openAIClient) {
+    throw new Error('Azure OpenAI is not configured. Please set the required environment variables.');
+  }
+
+  const summaryPrompts: Record<string, string> = {
+    'overview': 'Provide a comprehensive overview of the responses, including key statistics and general insights.',
+    'key-insights': 'Identify and explain the top 5 key insights from the responses. Focus on patterns, trends, and notable findings.',
+    'trends': 'Analyze trends in the responses. Look for patterns over time, common themes, and emerging topics.',
+    'recommendations': 'Based on the responses, provide actionable recommendations and next steps.',
+    'detailed': 'Create a detailed analysis of the responses, including question-by-question breakdown, statistical analysis, and comprehensive insights.',
+  };
+
+  const basePrompt = summaryPrompts[summaryType] || summaryPrompts['overview'];
+  const finalPrompt = customInstructions
+    ? `${basePrompt}\n\nAdditional instructions: ${customInstructions}\n\nStrictly follow these additional instructions.`
+    : basePrompt;
+
+  const systemPrompt = `You are an expert data analyst specializing in survey and assessment analysis.
+Provide professional, well-structured summaries with clear headings, bullet points, and actionable insights.`;
+
+  const dataContext = `Here is the responses data to analyze:
+${JSON.stringify(responsesData, null, 2)}`;
+
+  try {
+    const response = await openAIClient.getChatCompletions(
+      deploymentName,
+      [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: dataContext },
+        { role: 'user', content: finalPrompt }
+      ],
+      {
+        temperature: 0.7,
+        maxTokens: 2000,
+      }
+    );
+
+    return response.choices[0]?.message?.content || 'Unable to generate summary.';
+  } catch (error: any) {
+    console.error('Error generating summary:', error);
+    throw new Error(`Failed to generate summary: ${error.message}`);
+  }
+};

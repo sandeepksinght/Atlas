@@ -197,3 +197,83 @@ export const getAssessmentResponses = async (req: AuthRequest, res: Response) =>
     res.status(500).json({ error: 'Failed to get assessment responses' });
   }
 };
+
+export const chatAboutResponses = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.userId;
+    const { question, chatHistory } = req.body;
+
+    const assessment = await AssessmentModel.findAssessmentById(id);
+
+    if (!assessment) {
+      return res.status(404).json({ error: 'Assessment not found' });
+    }
+
+    if (assessment.user_id !== userId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const responses = await ResponseModel.findResponsesByAssessmentId(id);
+    const questions = await QuestionModel.findQuestionsByAssessmentId(id);
+
+    const responsesData = {
+      assessment,
+      questions,
+      responses,
+      totalResponses: responses.length,
+    };
+
+    const { chatAboutResponses: chatService } = await import('../services/openai');
+    const answer = await chatService(responsesData, question, chatHistory || []);
+
+    res.json({ answer });
+  } catch (error: any) {
+    console.error('Chat about responses error:', error);
+    res.status(500).json({ error: error.message || 'Failed to process chat request' });
+  }
+};
+
+export const generateSummary = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user!.userId;
+    const { summaryType, customInstructions } = req.body;
+
+    const assessment = await AssessmentModel.findAssessmentById(id);
+
+    if (!assessment) {
+      return res.status(404).json({ error: 'Assessment not found' });
+    }
+
+    if (assessment.user_id !== userId) {
+      return res.status(403).json({ error: 'Access denied' });
+    }
+
+    const responses = await ResponseModel.findResponsesByAssessmentId(id);
+    const questions = await QuestionModel.findQuestionsByAssessmentId(id);
+
+    if (responses.length === 0) {
+      return res.status(400).json({ error: 'No responses available to summarize' });
+    }
+
+    const responsesData = {
+      assessment,
+      questions,
+      responses,
+      totalResponses: responses.length,
+    };
+
+    const { generateResponsesSummary } = await import('../services/openai');
+    const summary = await generateResponsesSummary(
+      responsesData,
+      summaryType || 'overview',
+      customInstructions
+    );
+
+    res.json({ summary });
+  } catch (error: any) {
+    console.error('Generate summary error:', error);
+    res.status(500).json({ error: error.message || 'Failed to generate summary' });
+  }
+};

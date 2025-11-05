@@ -50,6 +50,12 @@ export const generateShareLink = (id: string, expiresAt?: string) =>
 export const getAssessmentResponses = (id: string) =>
   api.get(`/api/assessments/${id}/responses`);
 
+export const chatAboutResponses = (id: string, question: string, chatHistory?: any[]) =>
+  api.post(`/api/assessments/${id}/responses/chat`, { question, chatHistory });
+
+export const generateResponsesSummary = (id: string, summaryType: string, customInstructions?: string) =>
+  api.post(`/api/assessments/${id}/responses/summary`, { summaryType, customInstructions });
+
 // Questions
 export const addQuestion = (assessmentId: string, data: any) =>
   api.post(`/api/assessments/${assessmentId}/questions`, data);

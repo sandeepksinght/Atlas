@@ -12,5 +12,7 @@ router.delete('/:id', authenticate, assessmentController.deleteAssessment);
 router.post('/:id/publish', authenticate, assessmentController.publishAssessment);
 router.post('/:id/share', authenticate, assessmentController.generateShareLink);
 router.get('/:id/responses', authenticate, assessmentController.getAssessmentResponses);
+router.post('/:id/responses/chat', authenticate, assessmentController.chatAboutResponses);
+router.post('/:id/responses/summary', authenticate, assessmentController.generateSummary);
 
 export default router;
