@@ -11,7 +11,11 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Assessment type enum
-CREATE TYPE IF NOT EXISTS assessment_type AS ENUM ('survey', 'quiz', 'poll', 'assessment');
+DO $$ BEGIN
+    CREATE TYPE assessment_type AS ENUM ('survey', 'quiz', 'poll', 'assessment');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Projects / Folders table
 CREATE TABLE IF NOT EXISTS projects (
@@ -50,26 +54,40 @@ CREATE TABLE IF NOT EXISTS assessments (
 );
 
 -- Question type enum - Extended for TypeForm-style editor
-CREATE TYPE IF NOT EXISTS question_type AS ENUM (
-    'short_text',
-    'long_text',
-    'email',
-    'phone',
-    'number',
-    'url',
-    'date',
-    'multiple_choice',
-    'single_choice',
-    'dropdown',
-    'yes_no',
-    'true_false',
-    'rating',
-    'opinion_scale',
-    'statement',
-    'text'  -- Legacy support
-);
-CREATE TYPE IF NOT EXISTS difficulty_level AS ENUM ('beginner', 'intermediate', 'advanced', 'expert');
-CREATE TYPE IF NOT EXISTS blooms_taxonomy AS ENUM ('remember', 'understand', 'apply', 'analyze', 'evaluate', 'create');
+DO $$ BEGIN
+    CREATE TYPE question_type AS ENUM (
+        'short_text',
+        'long_text',
+        'email',
+        'phone',
+        'number',
+        'url',
+        'date',
+        'multiple_choice',
+        'single_choice',
+        'dropdown',
+        'yes_no',
+        'true_false',
+        'rating',
+        'opinion_scale',
+        'statement',
+        'text'  -- Legacy support
+    );
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE difficulty_level AS ENUM ('beginner', 'intermediate', 'advanced', 'expert');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE blooms_taxonomy AS ENUM ('remember', 'understand', 'apply', 'analyze', 'evaluate', 'create');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Questions table
 CREATE TABLE IF NOT EXISTS questions (
