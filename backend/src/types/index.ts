@@ -9,7 +9,24 @@ export interface User {
 
 export type AssessmentType = 'survey' | 'quiz' | 'poll' | 'assessment';
 
-export type QuestionType = 'multiple_choice' | 'single_choice' | 'text' | 'rating' | 'yes_no' | 'dropdown';
+export type QuestionType =
+  | 'short_text'
+  | 'long_text'
+  | 'email'
+  | 'phone'
+  | 'number'
+  | 'url'
+  | 'date'
+  | 'multiple_choice'
+  | 'single_choice'
+  | 'dropdown'
+  | 'yes_no'
+  | 'true_false'
+  | 'rating'
+  | 'opinion_scale'
+  | 'statement'
+  // Legacy support
+  | 'text';
 
 export interface Assessment {
   id: string;

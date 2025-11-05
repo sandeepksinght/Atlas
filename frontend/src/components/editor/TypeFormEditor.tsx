@@ -245,9 +245,8 @@ export const TypeFormEditor: React.FC = () => {
         const questionData = {
           question_type: question.question_type,
           question_text: question.question_text,
-          description: question.description,
-          options: question.options ? JSON.stringify(question.options) : null,
-          correct_answer: question.correct_answer ? JSON.stringify(question.correct_answer) : null,
+          options: question.options || null,
+          correct_answer: question.correct_answer || null,
           points: question.points || 100,
           order_index: assessment.questions.indexOf(question),
           is_required: question.required,
