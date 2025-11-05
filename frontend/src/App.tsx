@@ -19,6 +19,7 @@ import TakeAssessment from './pages/TakeAssessment';
 import { TemplatesGallery } from './pages/TemplatesGallery';
 import { AnalyticsDashboard } from './pages/AnalyticsDashboard';
 import { AssessmentWizard } from './components/wizard/AssessmentWizard';
+import { TypeFormEditor } from './components/editor/TypeFormEditor';
 import Blog from './pages/Blog';
 import BlogPost from './pages/BlogPost';
 import Help from './pages/Help';
@@ -97,7 +98,7 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <AuthenticatedLayout>
-                    <AssessmentWizard onComplete={(id) => window.location.href = `/assessments/${id}`} />
+                    <AssessmentWizard onComplete={(id) => window.location.href = `/editor/${id}`} />
                   </AuthenticatedLayout>
                 </ProtectedRoute>
               }
@@ -154,6 +155,25 @@ const App: React.FC = () => {
                   <AuthenticatedLayout>
                     <AnalyticsDashboard />
                   </AuthenticatedLayout>
+                </ProtectedRoute>
+              }
+            />
+
+            {/* TypeForm-style Editor - Full screen, no sidebar */}
+            <Route
+              path="/editor/new"
+              element={
+                <ProtectedRoute>
+                  <TypeFormEditor />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/editor/:id"
+              element={
+                <ProtectedRoute>
+                  <TypeFormEditor />
                 </ProtectedRoute>
               }
             />

@@ -193,14 +193,14 @@ const Dashboard: React.FC = () => {
 
           {/* Create New - CTA Card */}
           <Link
-            to="/assessments/create"
+            to="/editor/new"
             className="bg-gradient-to-br from-blue-600 via-blue-700 to-purple-700 rounded-2xl p-6 text-white hover:shadow-xl hover:scale-105 transition-all group"
           >
             <div className="flex items-start justify-between h-full">
               <div className="flex-1">
                 <p className="text-sm font-medium text-blue-100 mb-1">Quick Action</p>
                 <p className="text-2xl font-bold">Create New</p>
-                <p className="text-xs text-blue-100 mt-2">Start from scratch</p>
+                <p className="text-xs text-blue-100 mt-2">Beautiful editor</p>
               </div>
               <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center group-hover:bg-white/30 group-hover:scale-110 transition-all">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
