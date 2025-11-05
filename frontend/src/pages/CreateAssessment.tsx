@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import * as api from '../services/api';
 import { Assessment, Question, AssessmentType, QuestionType } from '../types';
@@ -11,6 +11,7 @@ import { StickySaveBar } from '../components/StickySaveBar';
 const CreateAssessment: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const questionsContainerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
   const [assessment, setAssessment] = useState<Assessment | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -177,7 +178,19 @@ const CreateAssessment: React.FC = () => {
     try {
       await api.addQuestion(id, newQuestion);
       toast.success('Question added');
-      loadAssessment();
+      await loadAssessment();
+
+      // Scroll to questions container after adding
+      setTimeout(() => {
+        if (questionsContainerRef.current) {
+          questionsContainerRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+          // Focus on the container for keyboard navigation
+          questionsContainerRef.current.focus();
+        }
+      }, 100);
     } catch (error) {
       toast.error('Failed to add question');
     }
@@ -381,7 +394,7 @@ const CreateAssessment: React.FC = () => {
                   type="text"
                   value={title}
                   onChange={(e) => handleTitleChange(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter assessment title"
                 />
               </div>
@@ -392,7 +405,7 @@ const CreateAssessment: React.FC = () => {
                   value={description}
                   onChange={(e) => handleDescriptionChange(e.target.value)}
                   rows={3}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   placeholder="Enter assessment description"
                 />
               </div>
@@ -402,7 +415,7 @@ const CreateAssessment: React.FC = () => {
                 <select
                   value={type}
                   onChange={(e) => handleTypeChange(e.target.value as AssessmentType)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="quiz">Quiz (with scoring)</option>
                   <option value="survey">Survey</option>
@@ -416,7 +429,7 @@ const CreateAssessment: React.FC = () => {
                   type="checkbox"
                   checked={showResults}
                   onChange={(e) => setShowResults(e.target.checked)}
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+                  className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
                 <label className="ml-2 text-sm text-gray-700">
                   Show results to respondents after submission
@@ -428,7 +441,7 @@ const CreateAssessment: React.FC = () => {
               <button
                 onClick={handleSave}
                 disabled={loading}
-                className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition disabled:opacity-50"
+                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
               >
                 {loading ? 'Saving...' : 'Save'}
               </button>
@@ -475,7 +488,7 @@ const CreateAssessment: React.FC = () => {
                     onClick={() => setActiveTab('manual')}
                     className={`px-4 py-2 rounded-lg font-medium transition ${
                       activeTab === 'manual'
-                        ? 'bg-primary-600 text-white'
+                        ? 'bg-blue-600 text-white'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
@@ -485,7 +498,7 @@ const CreateAssessment: React.FC = () => {
                     onClick={() => setActiveTab('text')}
                     className={`px-4 py-2 rounded-lg font-medium transition ${
                       activeTab === 'text'
-                        ? 'bg-primary-600 text-white'
+                        ? 'bg-blue-600 text-white'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
@@ -495,7 +508,7 @@ const CreateAssessment: React.FC = () => {
                     onClick={() => setActiveTab('file')}
                     className={`px-4 py-2 rounded-lg font-medium transition ${
                       activeTab === 'file'
-                        ? 'bg-primary-600 text-white'
+                        ? 'bg-blue-600 text-white'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
@@ -505,7 +518,7 @@ const CreateAssessment: React.FC = () => {
                     onClick={() => setActiveTab('url')}
                     className={`px-4 py-2 rounded-lg font-medium transition ${
                       activeTab === 'url'
-                        ? 'bg-primary-600 text-white'
+                        ? 'bg-blue-600 text-white'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                   >
@@ -517,7 +530,7 @@ const CreateAssessment: React.FC = () => {
                   <div>
                     <button
                       onClick={handleAddQuestion}
-                      className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                     >
                       Add Question
                     </button>
@@ -530,7 +543,7 @@ const CreateAssessment: React.FC = () => {
                       value={aiContent}
                       onChange={(e) => setAiContent(e.target.value)}
                       rows={6}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="Paste your content here... AI will generate questions based on this content."
                     />
                     <div className="flex items-center space-x-4">
@@ -549,7 +562,7 @@ const CreateAssessment: React.FC = () => {
                       </div>
                       <button
                         onClick={handleGenerateFromText}
-                        className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                       >
                         Generate Questions
                       </button>
@@ -583,7 +596,7 @@ const CreateAssessment: React.FC = () => {
                       </div>
                       <button
                         onClick={handleGenerateFromFile}
-                        className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                       >
                         Generate Questions
                       </button>
@@ -597,7 +610,7 @@ const CreateAssessment: React.FC = () => {
                       type="url"
                       value={aiUrl}
                       onChange={(e) => setAiUrl(e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
                       placeholder="https://example.com/article"
                     />
                     <div className="flex items-center space-x-4">
@@ -616,7 +629,7 @@ const CreateAssessment: React.FC = () => {
                       </div>
                       <button
                         onClick={handleGenerateFromUrl}
-                        className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                       >
                         Generate Questions
                       </button>
@@ -634,20 +647,22 @@ const CreateAssessment: React.FC = () => {
                 )}
               </div>
 
-              {questions.length > 0 ? (
-                <DraggableQuestionList
-                  questions={questions}
-                  assessmentType={type}
-                  onUpdate={handleUpdateQuestion}
-                  onDelete={handleDeleteQuestion}
-                  onDuplicate={handleDuplicateQuestion}
-                  onReorder={handleReorderQuestions}
-                />
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  No questions yet. Add questions manually or generate them with AI.
-                </div>
-              )}
+              <div ref={questionsContainerRef} tabIndex={-1} className="focus:outline-none">
+                {questions.length > 0 ? (
+                  <DraggableQuestionList
+                    questions={questions}
+                    assessmentType={type}
+                    onUpdate={handleUpdateQuestion}
+                    onDelete={handleDeleteQuestion}
+                    onDuplicate={handleDuplicateQuestion}
+                    onReorder={handleReorderQuestions}
+                  />
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No questions yet. Add questions manually or generate them with AI.
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </div>

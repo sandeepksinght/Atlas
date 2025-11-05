@@ -19,12 +19,12 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
     },
     ref
   ) => {
-    const baseStyles = 'bg-white rounded-xl transition-all duration-150';
+    const baseStyles = 'bg-white rounded-xl transition-all duration-200';
 
     const variants = {
-      elevated: 'shadow-md hover:shadow-lg',
+      elevated: 'shadow-sm hover:shadow-md border border-gray-100',
       flat: 'shadow-none',
-      bordered: 'border border-gray-200',
+      bordered: 'border border-gray-200 hover:border-gray-300',
     };
 
     const paddings = {
@@ -34,7 +34,7 @@ const Card = React.forwardRef<HTMLDivElement, CardProps>(
       lg: 'p-8',
     };
 
-    const hoverStyles = hover ? 'cursor-pointer hover:scale-[1.01] active:scale-[0.99]' : '';
+    const hoverStyles = hover ? 'cursor-pointer hover:scale-[1.005] active:scale-[0.995]' : '';
 
     return (
       <div

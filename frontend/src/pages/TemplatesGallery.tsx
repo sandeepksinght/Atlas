@@ -122,7 +122,7 @@ export const TemplatesGallery: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search templates..."
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
 
@@ -134,7 +134,7 @@ export const TemplatesGallery: React.FC = () => {
                 className={cn(
                   'px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all',
                   selectedCategory === category
-                    ? 'bg-indigo-600 text-white shadow-md'
+                    ? 'bg-blue-600 text-white shadow-md'
                     : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
                 )}
               >
@@ -147,7 +147,7 @@ export const TemplatesGallery: React.FC = () => {
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <svg
-              className="animate-spin h-8 w-8 text-indigo-600"
+              className="animate-spin h-8 w-8 text-blue-600"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -243,7 +243,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, onUse }) => {
     Training: 'bg-blue-100 text-blue-800',
     Education: 'bg-green-100 text-green-800',
     Events: 'bg-yellow-100 text-yellow-800',
-    Assessment: 'bg-indigo-100 text-indigo-800',
+    Assessment: 'bg-blue-100 text-blue-800',
     Poll: 'bg-orange-100 text-orange-800',
     Custom: 'bg-gray-100 text-gray-800',
   };
@@ -253,7 +253,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ template, onUse }) => {
   return (
     <Card hover padding="none" className="overflow-hidden group">
       {/* Thumbnail */}
-      <div className="h-32 bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+      <div className="h-32 bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center">
         <svg className="w-16 h-16 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path
             strokeLinecap="round"

@@ -58,7 +58,7 @@ export const ProjectsSidebar: React.FC = () => {
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
         {!collapsed && (
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center shadow-sm">
               <span className="text-white font-bold text-lg">A</span>
             </div>
             <span className="font-semibold text-gray-900">Atlas</span>
@@ -95,7 +95,7 @@ export const ProjectsSidebar: React.FC = () => {
                 className={cn(
                   'flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors',
                   location.pathname === '/'
-                    ? 'bg-indigo-50 text-indigo-700'
+                    ? 'bg-blue-50 text-blue-700'
                     : 'text-gray-700 hover:bg-gray-100'
                 )}
               >
@@ -115,7 +115,7 @@ export const ProjectsSidebar: React.FC = () => {
                 className={cn(
                   'flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors',
                   location.pathname === '/assessments'
-                    ? 'bg-indigo-50 text-indigo-700'
+                    ? 'bg-blue-50 text-blue-700'
                     : 'text-gray-700 hover:bg-gray-100'
                 )}
               >
@@ -135,7 +135,7 @@ export const ProjectsSidebar: React.FC = () => {
                 className={cn(
                   'flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors',
                   location.pathname === '/templates'
-                    ? 'bg-indigo-50 text-indigo-700'
+                    ? 'bg-blue-50 text-blue-700'
                     : 'text-gray-700 hover:bg-gray-100'
                 )}
               >
@@ -308,18 +308,18 @@ interface CreateProjectModalProps {
 const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onSuccess }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [color, setColor] = useState('#6366F1');
+  const [color, setColor] = useState('#3B82F6');
   const [loading, setLoading] = useState(false);
 
   const colors = [
-    '#6366F1', // Indigo
-    '#EC4899', // Pink
-    '#8B5CF6', // Purple
+    '#3B82F6', // Blue
     '#10B981', // Emerald
     '#F59E0B', // Amber
-    '#EF4444', // Rose
-    '#3B82F6', // Blue
+    '#EF4444', // Red
+    '#EC4899', // Pink
+    '#8B5CF6', // Purple
     '#14B8A6', // Teal
+    '#6366F1', // Indigo
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -348,7 +348,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onSucc
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="My Project"
               required
             />
@@ -360,7 +360,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onSucc
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               placeholder="Optional description"
             />
           </div>
@@ -375,7 +375,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onSucc
                   onClick={() => setColor(c)}
                   className={cn(
                     'w-8 h-8 rounded-full transition-transform',
-                    color === c && 'ring-2 ring-offset-2 ring-indigo-500 scale-110'
+                    color === c && 'ring-2 ring-offset-2 ring-blue-500 scale-110'
                   )}
                   style={{ backgroundColor: c }}
                 />
@@ -394,7 +394,7 @@ const CreateProjectModal: React.FC<CreateProjectModalProps> = ({ onClose, onSucc
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition disabled:opacity-50"
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-40 shadow-sm"
             >
               {loading ? 'Creating...' : 'Create'}
             </button>

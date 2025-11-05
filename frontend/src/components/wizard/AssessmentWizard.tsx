@@ -94,7 +94,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }
                       index < currentStep
                         ? 'bg-emerald-500 text-white'
                         : index === currentStep
-                        ? 'bg-indigo-600 text-white ring-4 ring-indigo-100'
+                        ? 'bg-blue-600 text-white ring-4 ring-blue-100'
                         : 'bg-gray-200 text-gray-500'
                     )}
                   >
@@ -232,13 +232,13 @@ const Step1ChooseStart: React.FC<StepProps> = ({ onNext, updateData, data }) => 
             key={option.id}
             onClick={() => handleSelect(option.id)}
             className={cn(
-              'p-6 rounded-xl border-2 transition-all text-left hover:border-indigo-300',
+              'p-6 rounded-xl border-2 transition-all text-left hover:border-blue-300',
               selected === option.id
-                ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-100'
+                ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-100'
                 : 'border-gray-200 hover:bg-gray-50'
             )}
           >
-            <div className={cn('mb-4', selected === option.id ? 'text-indigo-600' : 'text-gray-400')}>
+            <div className={cn('mb-4', selected === option.id ? 'text-blue-600' : 'text-gray-400')}>
               {option.icon}
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">{option.title}</h3>
@@ -281,7 +281,7 @@ const Step2BasicInfo: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-lg"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
             placeholder="e.g., Product Knowledge Quiz Q4 2025"
           />
         </div>
@@ -292,7 +292,7 @@ const Step2BasicInfo: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Describe the purpose and content of this assessment..."
           />
         </div>
@@ -315,7 +315,7 @@ const Step2BasicInfo: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
                 className={cn(
                   'p-4 rounded-lg border-2 transition-all text-left',
                   type === option.value
-                    ? 'border-indigo-600 bg-indigo-50'
+                    ? 'border-blue-600 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
                 )}
               >
@@ -378,7 +378,7 @@ const Step3Strategy: React.FC<StepProps> = ({ onNext, onPrevious, onSkip, update
             className={cn(
               'w-full p-6 rounded-xl border-2 transition-all text-left',
               strategy === option.id
-                ? 'border-indigo-600 bg-indigo-50 ring-2 ring-indigo-100'
+                ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-100'
                 : 'border-gray-200 hover:border-gray-300'
             )}
           >
@@ -470,7 +470,7 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
                 className={cn(
                   'px-4 py-2 rounded-lg border-2 transition-all capitalize',
                   difficulty === level
-                    ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+                    ? 'border-blue-600 bg-blue-50 text-blue-700'
                     : 'border-gray-200 hover:border-gray-300 text-gray-700'
                 )}
               >
@@ -486,7 +486,7 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
           <select
             value={bloomsLevel}
             onChange={(e) => setBloomsLevel(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           >
             <option value="remember">Remember (recall facts)</option>
             <option value="understand">Understand (explain concepts)</option>
@@ -574,7 +574,7 @@ const Step5Settings: React.FC<StepProps> = ({ onNext, onPrevious, updateData, da
                 timeLimit: { ...settings.timeLimit, enabled: e.target.checked },
               })
             }
-            className="mt-1 w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+            className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
           />
           <div className="flex-1">
             <label className="block font-medium text-gray-900 mb-2">Time Limit</label>
@@ -606,7 +606,7 @@ const Step5Settings: React.FC<StepProps> = ({ onNext, onPrevious, updateData, da
                 pagination: { ...settings.pagination, enabled: e.target.checked },
               })
             }
-            className="mt-1 w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+            className="mt-1 w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
           />
           <div className="flex-1">
             <label className="block font-medium text-gray-900 mb-2">Pagination</label>
@@ -637,7 +637,7 @@ const Step5Settings: React.FC<StepProps> = ({ onNext, onPrevious, updateData, da
               type="checkbox"
               checked={settings.randomize}
               onChange={(e) => setSettings({ ...settings, randomize: e.target.checked })}
-              className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
             />
             <span className="font-medium text-gray-900">Randomize question order</span>
           </label>
@@ -647,7 +647,7 @@ const Step5Settings: React.FC<StepProps> = ({ onNext, onPrevious, updateData, da
               type="checkbox"
               checked={settings.showResults}
               onChange={(e) => setSettings({ ...settings, showResults: e.target.checked })}
-              className="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500"
+              className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
             />
             <span className="font-medium text-gray-900">Show results after submission</span>
           </label>

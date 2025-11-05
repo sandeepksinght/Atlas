@@ -38,7 +38,7 @@ const Dashboard: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -60,8 +60,8 @@ const Dashboard: React.FC = () => {
                 <p className="text-gray-600 text-sm">Total Assessments</p>
                 <p className="text-3xl font-bold text-gray-900 mt-1">{assessments.length}</p>
               </div>
-              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
@@ -102,7 +102,7 @@ const Dashboard: React.FC = () => {
 
           <Link
             to="/assessments/create"
-            className="bg-gradient-to-br from-primary-600 to-primary-700 p-6 rounded-xl shadow-md text-white hover:from-primary-700 hover:to-primary-800 transition"
+            className="bg-gradient-to-br from-blue-600 to-blue-700 p-6 rounded-xl shadow-md text-white hover:from-blue-700 hover:to-blue-800 transition"
           >
             <div className="flex items-center justify-between h-full">
               <div>
@@ -121,7 +121,7 @@ const Dashboard: React.FC = () => {
         <div className="bg-white rounded-xl shadow-md p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900">Recent Assessments</h2>
-            <Link to="/assessments" className="text-primary-600 hover:text-primary-700 font-medium">
+            <Link to="/assessments" className="text-blue-600 hover:text-blue-700 font-medium">
               View All
             </Link>
           </div>
@@ -134,7 +134,7 @@ const Dashboard: React.FC = () => {
               <p className="text-gray-600 mb-4">No assessments yet</p>
               <Link
                 to="/assessments/create"
-                className="inline-block px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition"
+                className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
                 Create Your First Assessment
               </Link>
@@ -145,7 +145,7 @@ const Dashboard: React.FC = () => {
                 <Link
                   key={assessment.id}
                   to={`/assessments/${assessment.id}`}
-                  className="block p-4 border border-gray-200 rounded-lg hover:border-primary-300 hover:bg-primary-50 transition"
+                  className="block p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition"
                 >
                   <div className="flex justify-between items-start">
                     <div>
