@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import * as XLSX from 'xlsx';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface ChatMessage {
   role: 'user' | 'assistant';
@@ -490,7 +491,10 @@ const ViewResponses: React.FC = () => {
               <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-900'}`}>
                   {message.role === 'assistant' ? (
-                    <ReactMarkdown className="text-xs prose prose-sm max-w-none prose-headings:text-xs prose-p:text-xs prose-li:text-xs prose-strong:text-xs prose-table:text-xs">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      className="text-xs prose prose-sm max-w-none prose-headings:text-xs prose-p:text-xs prose-li:text-xs prose-strong:text-xs prose-table:text-xs"
+                    >
                       {message.content}
                     </ReactMarkdown>
                   ) : (
@@ -654,7 +658,7 @@ const ViewResponses: React.FC = () => {
                 <div className="mt-6 p-6 bg-gray-50 rounded-lg">
                   <h3 className="font-semibold text-gray-900 mb-3">Generated Summary</h3>
                   <div className="prose prose-sm max-w-none prose-table:text-sm prose-thead:bg-gray-100 prose-th:border prose-th:border-gray-300 prose-th:p-2 prose-td:border prose-td:border-gray-300 prose-td:p-2">
-                    <ReactMarkdown>{generatedSummary}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedSummary}</ReactMarkdown>
                   </div>
                   <button
                     onClick={() => {
@@ -800,7 +804,7 @@ const ViewResponses: React.FC = () => {
                       </div>
                       <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                         <div className="prose prose-sm max-w-none prose-table:text-sm prose-thead:bg-gray-100 prose-th:border prose-th:border-gray-300 prose-th:p-2 prose-td:border prose-td:border-gray-300 prose-td:p-2">
-                          <ReactMarkdown>{summary.content}</ReactMarkdown>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{summary.content}</ReactMarkdown>
                         </div>
                       </div>
                       <div className="mt-4 flex gap-2">
