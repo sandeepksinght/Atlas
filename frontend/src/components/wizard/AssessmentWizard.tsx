@@ -61,8 +61,12 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
+      // Special navigation for templates: skip strategy and content steps
+      if (currentStep === 1 && wizardData.startMethod === 'template') {
+        setCurrentStep(4); // From basic info, jump directly to settings
+      }
       // If moving from step 2 (strategy) and manual is selected, skip step 3
-      if (currentStep === 2 && wizardData.questionStrategy === 'manual') {
+      else if (currentStep === 2 && wizardData.questionStrategy === 'manual') {
         setCurrentStep(4); // Jump directly to settings
       } else {
         setCurrentStep(currentStep + 1);
@@ -72,8 +76,12 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }
 
   const handlePrevious = () => {
     if (currentStep > 0) {
+      // Special navigation for templates: skip strategy and content steps
+      if (currentStep === 4 && wizardData.startMethod === 'template') {
+        setCurrentStep(1); // From settings, jump back to basic info
+      }
       // If moving back from step 4 (settings) and manual is selected, skip step 3
-      if (currentStep === 4 && wizardData.questionStrategy === 'manual') {
+      else if (currentStep === 4 && wizardData.questionStrategy === 'manual') {
         setCurrentStep(2); // Jump back to strategy
       } else {
         setCurrentStep(currentStep - 1);
@@ -150,7 +158,10 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }
           {currentStep === 0 && (
             <Step1ChooseStart onNext={handleNext} updateData={updateWizardData} data={wizardData} />
           )}
-          {currentStep === 1 && (
+          {currentStep === 1 && wizardData.startMethod === 'template' && (
+            <Step1BTemplateSelect onNext={handleNext} onPrevious={handlePrevious} updateData={updateWizardData} data={wizardData} />
+          )}
+          {currentStep === 1 && wizardData.startMethod !== 'template' && (
             <Step2BasicInfo onNext={handleNext} onPrevious={handlePrevious} updateData={updateWizardData} data={wizardData} />
           )}
           {currentStep === 2 && (
@@ -263,6 +274,131 @@ const Step1ChooseStart: React.FC<StepProps> = ({ onNext, updateData, data }) => 
 
       <div className="flex justify-end">
         <Button onClick={onNext} disabled={!selected} size="lg">
+          Continue
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Step 1B: Template Selection (shown when startMethod === 'template')
+const Step1BTemplateSelect: React.FC<StepProps> = ({ onNext, onPrevious, updateData, data }) => {
+  const [templates, setTemplates] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(data.selectedTemplateId || null);
+  const [error, setError] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    const loadTemplates = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await api.getTemplates();
+        setTemplates(response.data);
+      } catch (err: any) {
+        console.error('Error loading templates:', err);
+        setError('Failed to load templates. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTemplates();
+  }, []);
+
+  const handleSelectTemplate = async (templateId: string) => {
+    try {
+      setSelectedTemplate(templateId);
+      // Load template details
+      const response = await api.getTemplate(templateId);
+      const template = response.data;
+
+      // Pre-fill wizard data with template info
+      updateData({
+        selectedTemplateId: templateId,
+        title: template.title || '',
+        description: template.description || '',
+        type: template.type || 'quiz',
+        // We'll let the user go through question strategy selection
+        // since the template already has questions
+        templateQuestions: template.questions || [],
+      });
+    } catch (err: any) {
+      console.error('Error loading template details:', err);
+      setError('Failed to load template details.');
+    }
+  };
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose a Template</h2>
+      <p className="text-gray-600 mb-8">Start with a pre-built template and customize it to your needs</p>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="text-center py-12">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <p className="mt-4 text-gray-600">Loading templates...</p>
+        </div>
+      ) : templates.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <div className="text-5xl mb-4">📋</div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No Templates Available</h3>
+          <p className="text-gray-600">There are no templates available yet. Try starting from scratch instead.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 max-h-[500px] overflow-y-auto pr-2">
+          {templates.map((template) => (
+            <button
+              key={template.id}
+              onClick={() => handleSelectTemplate(template.id)}
+              className={cn(
+                'p-6 rounded-xl border-2 transition-all text-left hover:border-blue-300 h-full',
+                selectedTemplate === template.id
+                  ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-100'
+                  : 'border-gray-200 hover:bg-gray-50'
+              )}
+            >
+              <div className="flex items-start mb-3">
+                {template.category && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                    {template.category}
+                  </span>
+                )}
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">{template.title}</h3>
+              {template.description && (
+                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{template.description}</p>
+              )}
+              <div className="flex items-center gap-4 text-xs text-gray-500">
+                {template.questions?.length > 0 && (
+                  <span className="flex items-center">
+                    <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                      <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                    </svg>
+                    {template.questions.length} questions
+                  </span>
+                )}
+                {template.type && (
+                  <span className="capitalize">{template.type}</span>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="flex justify-between">
+        <Button variant="secondary" onClick={onPrevious}>
+          Back
+        </Button>
+        <Button onClick={onNext} disabled={!selectedTemplate}>
           Continue
         </Button>
       </div>
@@ -885,17 +1021,35 @@ const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => 
     setError(null);
 
     try {
-      // Step 1: Create the assessment with basic info
-      const assessmentData = {
-        title: data.title,
-        description: data.description || '',
-        type: data.type || 'quiz',
-        settings: data.settings || {},
-        is_published: false,
-      };
+      let assessmentId: string;
 
-      const createResponse = await api.createAssessment(assessmentData);
-      const assessmentId = createResponse.data.id;
+      // Step 1: Create the assessment (different flow for template vs scratch)
+      if (data.startMethod === 'template' && data.selectedTemplateId) {
+        // Use template creation API which creates assessment with all questions
+        const templateResponse = await api.createFromTemplate(data.selectedTemplateId);
+        assessmentId = templateResponse.data.id;
+
+        // Optionally update the title/description if user modified them
+        if (data.title || data.description) {
+          await api.updateAssessment(assessmentId, {
+            title: data.title,
+            description: data.description,
+            settings: data.settings || {},
+          });
+        }
+      } else {
+        // Create from scratch
+        const assessmentData = {
+          title: data.title,
+          description: data.description || '',
+          type: data.type || 'quiz',
+          settings: data.settings || {},
+          is_published: false,
+        };
+
+        const createResponse = await api.createAssessment(assessmentData);
+        assessmentId = createResponse.data.id;
+      }
 
       // Step 2: Handle question generation based on strategy
       if (data.questionStrategy === 'ai' && data.aiOptions) {
@@ -965,10 +1119,37 @@ const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => 
             <div className="text-gray-900 capitalize">{data.type}</div>
           </div>
           <div>
+            <div className="text-sm font-medium text-gray-500">Starting Point</div>
+            <div className="text-gray-900 capitalize">
+              {data.startMethod === 'template' ? 'From Template' :
+               data.startMethod === 'import' ? 'Imported' : 'From Scratch'}
+            </div>
+          </div>
+        </div>
+
+        {/* Template Details */}
+        {data.startMethod === 'template' && data.templateQuestions && (
+          <div>
+            <div className="text-sm font-medium text-gray-500">Template</div>
+            <div className="text-gray-700">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                </svg>
+                <span className="font-semibold">{data.templateQuestions.length}</span>
+                <span className="ml-1">pre-built questions from template</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {data.questionStrategy && (
+          <div>
             <div className="text-sm font-medium text-gray-500">Question Method</div>
             <div className="text-gray-900 capitalize">{data.questionStrategy}</div>
           </div>
-        </div>
+        )}
 
         {/* AI Strategy Details */}
         {data.questionStrategy === 'ai' && data.aiOptions && (
