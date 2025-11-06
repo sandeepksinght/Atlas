@@ -452,8 +452,8 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
         { value: 'single_choice', label: 'Single Choice (MCQ)', icon: '🔘' },
         { value: 'multiple_choice', label: 'Multiple Choice (Checkboxes)', icon: '☑️' },
         { value: 'true_false', label: 'True/False', icon: '✓✗' },
-        { value: 'short_answer', label: 'Short Answer', icon: '📝' },
-        { value: 'essay', label: 'Essay/Long Answer', icon: '📄' },
+        { value: 'short_text', label: 'Short Answer', icon: '📝' },
+        { value: 'long_text', label: 'Essay/Long Answer', icon: '📄' },
         { value: 'rating', label: 'Rating Scale', icon: '⭐' },
         { value: 'email', label: 'Email', icon: '📧' },
         { value: 'number', label: 'Number', icon: '🔢' },
@@ -461,7 +461,7 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
 
   const defaultQuestionTypes = isQuizOrAssessment
     ? ['single_choice', 'multiple_choice', 'true_false']
-    : ['single_choice', 'short_answer'];
+    : ['single_choice', 'short_text'];
 
   const [questionTypes, setQuestionTypes] = useState<string[]>(
     data.importOptions?.questionTypes || defaultQuestionTypes
@@ -962,8 +962,8 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
         { value: 'single_choice', label: 'Single Choice (MCQ)', icon: '🔘' },
         { value: 'multiple_choice', label: 'Multiple Choice (Checkboxes)', icon: '☑️' },
         { value: 'true_false', label: 'True/False', icon: '✓✗' },
-        { value: 'short_answer', label: 'Short Answer', icon: '📝' },
-        { value: 'essay', label: 'Essay/Long Answer', icon: '📄' },
+        { value: 'short_text', label: 'Short Answer', icon: '📝' },
+        { value: 'long_text', label: 'Essay/Long Answer', icon: '📄' },
         { value: 'rating', label: 'Rating Scale', icon: '⭐' },
         { value: 'email', label: 'Email', icon: '📧' },
         { value: 'number', label: 'Number', icon: '🔢' },
@@ -971,7 +971,7 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
 
   const defaultQuestionTypes = isQuizOrAssessment
     ? ['single_choice', 'multiple_choice', 'true_false']
-    : ['single_choice', 'short_answer'];
+    : ['single_choice', 'short_text'];
 
   const [questionTypes, setQuestionTypes] = useState<string[]>(
     data.aiOptions?.questionTypes || defaultQuestionTypes

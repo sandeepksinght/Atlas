@@ -31,7 +31,7 @@ export const generateQuestionsFromContent = async (
   // Default question types based on assessment type
   const defaultQuestionTypes = (assessmentType === 'quiz' || assessmentType === 'assessment')
     ? ['single_choice', 'multiple_choice', 'true_false']
-    : ['single_choice', 'short_answer', 'rating'];
+    : ['single_choice', 'short_text', 'rating'];
 
   const allowedTypes = questionTypes && questionTypes.length > 0 ? questionTypes : defaultQuestionTypes;
   const questionTypesStr = allowedTypes.join(', ');
@@ -61,7 +61,7 @@ Important:
 - For single_choice: provide 4 options, only 1 is correct
 - For multiple_choice: provide 4+ options, multiple can be correct (return array of correct answers)
 - For true_false: options should be ["True", "False"], correct_answer should be either "True" or "False"
-- For short_answer/essay/email/number: no options needed, correct_answer can be null or a sample answer
+- For short_text/long_text/email/number: no options needed, correct_answer can be null or a sample answer
 - Ensure questions are clear, relevant, and well-structured
 - Return only valid JSON, no additional text`;
 
