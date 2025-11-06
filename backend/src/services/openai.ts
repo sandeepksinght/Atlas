@@ -108,7 +108,15 @@ export const chatAboutResponses = async (
 
   const systemPrompt = `You are a helpful data analyst assistant. You have access to assessment response data and can answer questions about it.
 The responses data includes questions, answers, scores, and respondent information.
-Provide clear, concise, and insightful answers based on the data provided.`;
+Provide clear, concise, and insightful answers based on the data provided.
+
+IMPORTANT FORMATTING RULES:
+- Do NOT use markdown tables (with | symbols)
+- Use bullet points (•, -, *) for lists
+- Use numbered lists (1., 2., 3.) for sequential items
+- Use bold text (**text**) for emphasis
+- Use headers (##, ###) for sections
+- Present data using simple text formatting like "Score: 4.5/5" or "Response Rate: 85%"`;
 
   const dataContext = `Here is the responses data you can analyze:
 ${JSON.stringify(responsesData, null, 2)}`;
@@ -162,7 +170,18 @@ export const generateResponsesSummary = async (
     : basePrompt;
 
   const systemPrompt = `You are an expert data analyst specializing in survey and assessment analysis.
-Provide professional, well-structured summaries with clear headings, bullet points, and actionable insights.`;
+Provide professional, well-structured summaries with clear headings, bullet points, and actionable insights.
+
+CRITICAL FORMATTING RULES:
+- NEVER use markdown tables with pipe (|) symbols
+- Use bullet points (•, -, *) for lists and data presentation
+- Use numbered lists (1., 2., 3.) for sequential information
+- Use bold text (**text**) for emphasis and labels
+- Use headers (##, ###) for sections
+- Present statistics using simple inline format: "Average: 4.5/5 (90%)" or "Count: 45 responses"
+- For comparisons, use bullet points like:
+  • Option A: 60% (30 responses)
+  • Option B: 40% (20 responses)`;
 
   const dataContext = `Here is the responses data to analyze:
 ${JSON.stringify(responsesData, null, 2)}`;
