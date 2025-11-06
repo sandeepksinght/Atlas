@@ -14,7 +14,7 @@ questionGenerationQueue.process(async (job) => {
   console.log(`Processing question generation job: ${job.id}`);
 
   try {
-    const { jobId, assessmentId, content, assessmentType, numberOfQuestions } = job.data;
+    const { jobId, assessmentId, content, assessmentType, numberOfQuestions, questionTypes } = job.data;
 
     // Update job status
     await JobModel.updateJobStatus(jobId, 'processing');
@@ -23,7 +23,8 @@ questionGenerationQueue.process(async (job) => {
     const generatedQuestions = await generateQuestionsFromContent(
       content,
       assessmentType,
-      numberOfQuestions
+      numberOfQuestions,
+      questionTypes
     );
 
     // Add questions to database
@@ -109,7 +110,7 @@ fileProcessingQueue.process(async (job) => {
   console.log(`Processing file processing job: ${job.id}`);
 
   try {
-    const { jobId, assessmentId, fileContent, fileName, assessmentType, numberOfQuestions, extractMode } = job.data;
+    const { jobId, assessmentId, fileContent, fileName, assessmentType, numberOfQuestions, extractMode, questionTypes } = job.data;
 
     // Update job status
     await JobModel.updateJobStatus(jobId, 'processing');
@@ -131,7 +132,8 @@ fileProcessingQueue.process(async (job) => {
       generatedQuestions = await generateQuestionsFromContent(
         fileContent,
         assessmentType,
-        numberOfQuestions
+        numberOfQuestions,
+        questionTypes
       );
     }
 
@@ -177,7 +179,7 @@ urlFetchQueue.process(async (job) => {
   console.log(`Processing URL fetch job: ${job.id}`);
 
   try {
-    const { jobId, assessmentId, url, assessmentType, numberOfQuestions } = job.data;
+    const { jobId, assessmentId, url, assessmentType, numberOfQuestions, questionTypes } = job.data;
 
     // Update job status
     await JobModel.updateJobStatus(jobId, 'processing');
@@ -202,7 +204,8 @@ urlFetchQueue.process(async (job) => {
     const generatedQuestions = await generateQuestionsFromContent(
       content,
       assessmentType,
-      numberOfQuestions
+      numberOfQuestions,
+      questionTypes
     );
 
     // Add questions to database

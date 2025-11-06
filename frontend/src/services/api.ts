@@ -75,21 +75,24 @@ export const updateQuestion = (id: string, data: any) =>
 export const deleteQuestion = (id: string) =>
   api.delete(`/api/assessments/questions/${id}`);
 
-export const generateQuestionsFromText = (assessmentId: string, content: string, numberOfQuestions: number) =>
-  api.post(`/api/assessments/${assessmentId}/generate-from-text`, { content, numberOfQuestions });
+export const generateQuestionsFromText = (assessmentId: string, content: string, numberOfQuestions: number, questionTypes?: string[]) =>
+  api.post(`/api/assessments/${assessmentId}/generate-from-text`, { content, numberOfQuestions, questionTypes });
 
-export const generateQuestionsFromFile = (assessmentId: string, file: File, numberOfQuestions: number, extractMode?: boolean) => {
+export const generateQuestionsFromFile = (assessmentId: string, file: File, numberOfQuestions: number, extractMode?: boolean, questionTypes?: string[]) => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('numberOfQuestions', numberOfQuestions.toString());
   formData.append('extractMode', (extractMode || false).toString());
+  if (questionTypes && questionTypes.length > 0) {
+    formData.append('questionTypes', JSON.stringify(questionTypes));
+  }
   return api.post(`/api/assessments/${assessmentId}/generate-from-file`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
 
-export const generateQuestionsFromUrl = (assessmentId: string, url: string, numberOfQuestions: number) =>
-  api.post(`/api/assessments/${assessmentId}/generate-from-url`, { url, numberOfQuestions });
+export const generateQuestionsFromUrl = (assessmentId: string, url: string, numberOfQuestions: number, questionTypes?: string[]) =>
+  api.post(`/api/assessments/${assessmentId}/generate-from-url`, { url, numberOfQuestions, questionTypes });
 
 // Public responses
 export const getAssessmentByToken = (token: string) =>

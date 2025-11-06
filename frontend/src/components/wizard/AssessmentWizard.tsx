@@ -440,6 +440,43 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
   const [extractMode, setExtractMode] = useState(data.importOptions?.extractMode || true);
   const [numberOfQuestions, setNumberOfQuestions] = useState(data.importOptions?.numberOfQuestions || 10);
 
+  // Determine available question types based on assessment type
+  const isQuizOrAssessment = data.type === 'quiz' || data.type === 'assessment';
+  const availableQuestionTypes = isQuizOrAssessment
+    ? [
+        { value: 'single_choice', label: 'Single Choice (MCQ)', icon: '🔘' },
+        { value: 'multiple_choice', label: 'Multiple Choice (Checkboxes)', icon: '☑️' },
+        { value: 'true_false', label: 'True/False', icon: '✓✗' },
+      ]
+    : [
+        { value: 'single_choice', label: 'Single Choice (MCQ)', icon: '🔘' },
+        { value: 'multiple_choice', label: 'Multiple Choice (Checkboxes)', icon: '☑️' },
+        { value: 'true_false', label: 'True/False', icon: '✓✗' },
+        { value: 'short_answer', label: 'Short Answer', icon: '📝' },
+        { value: 'essay', label: 'Essay/Long Answer', icon: '📄' },
+        { value: 'rating', label: 'Rating Scale', icon: '⭐' },
+        { value: 'email', label: 'Email', icon: '📧' },
+        { value: 'number', label: 'Number', icon: '🔢' },
+      ];
+
+  const defaultQuestionTypes = isQuizOrAssessment
+    ? ['single_choice', 'multiple_choice', 'true_false']
+    : ['single_choice', 'short_answer'];
+
+  const [questionTypes, setQuestionTypes] = useState<string[]>(
+    data.importOptions?.questionTypes || defaultQuestionTypes
+  );
+
+  const toggleQuestionType = (type: string) => {
+    if (questionTypes.includes(type)) {
+      if (questionTypes.length > 1) {
+        setQuestionTypes(questionTypes.filter(t => t !== type));
+      }
+    } else {
+      setQuestionTypes([...questionTypes, type]);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
     if (selectedFile) {
@@ -482,6 +519,7 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
         importOptions: {
           extractMode,
           numberOfQuestions,
+          questionTypes,
         },
       });
       onNext();
@@ -572,22 +610,70 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
             </div>
 
             {!extractMode && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Number of Questions to Generate: {numberOfQuestions}
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="50"
-                  value={numberOfQuestions}
-                  onChange={(e) => setNumberOfQuestions(parseInt(e.target.value))}
-                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                  <span>1</span>
-                  <span>25</span>
-                  <span>50</span>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Number of Questions to Generate: {numberOfQuestions}
+                  </label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="50"
+                    value={numberOfQuestions}
+                    onChange={(e) => setNumberOfQuestions(parseInt(e.target.value))}
+                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>1</span>
+                    <span>25</span>
+                    <span>50</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Question Types
+                    {isQuizOrAssessment && (
+                      <span className="ml-2 text-xs text-gray-500">(Auto-gradable types only)</span>
+                    )}
+                  </label>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Select which types of questions to generate.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {availableQuestionTypes.map((type) => (
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() => toggleQuestionType(type.value)}
+                        className={cn(
+                          'p-2 rounded-lg border-2 transition-all text-left',
+                          questionTypes.includes(type.value)
+                            ? 'border-blue-600 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                        )}
+                      >
+                        <div className="flex items-center">
+                          <div className={cn(
+                            'w-4 h-4 rounded border-2 mr-2 flex-shrink-0 flex items-center justify-center',
+                            questionTypes.includes(type.value)
+                              ? 'bg-blue-600 border-blue-600'
+                              : 'border-gray-300'
+                          )}>
+                            {questionTypes.includes(type.value) && (
+                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0 flex items-center space-x-2">
+                            <span className="text-base">{type.icon}</span>
+                            <span className="text-xs font-medium text-gray-900">{type.label}</span>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -864,6 +950,44 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
   const [difficulty, setDifficulty] = useState(data.aiOptions?.difficulty || 'mixed');
   const [extractMode, setExtractMode] = useState(data.aiOptions?.extractMode || false);
 
+  // Determine available question types based on assessment type
+  const isQuizOrAssessment = data.type === 'quiz' || data.type === 'assessment';
+  const availableQuestionTypes = isQuizOrAssessment
+    ? [
+        { value: 'single_choice', label: 'Single Choice (MCQ)', icon: '🔘' },
+        { value: 'multiple_choice', label: 'Multiple Choice (Checkboxes)', icon: '☑️' },
+        { value: 'true_false', label: 'True/False', icon: '✓✗' },
+      ]
+    : [
+        { value: 'single_choice', label: 'Single Choice (MCQ)', icon: '🔘' },
+        { value: 'multiple_choice', label: 'Multiple Choice (Checkboxes)', icon: '☑️' },
+        { value: 'true_false', label: 'True/False', icon: '✓✗' },
+        { value: 'short_answer', label: 'Short Answer', icon: '📝' },
+        { value: 'essay', label: 'Essay/Long Answer', icon: '📄' },
+        { value: 'rating', label: 'Rating Scale', icon: '⭐' },
+        { value: 'email', label: 'Email', icon: '📧' },
+        { value: 'number', label: 'Number', icon: '🔢' },
+      ];
+
+  const defaultQuestionTypes = isQuizOrAssessment
+    ? ['single_choice', 'multiple_choice', 'true_false']
+    : ['single_choice', 'short_answer'];
+
+  const [questionTypes, setQuestionTypes] = useState<string[]>(
+    data.aiOptions?.questionTypes || defaultQuestionTypes
+  );
+
+  const toggleQuestionType = (type: string) => {
+    if (questionTypes.includes(type)) {
+      // Don't allow deselecting all types
+      if (questionTypes.length > 1) {
+        setQuestionTypes(questionTypes.filter(t => t !== type));
+      }
+    } else {
+      setQuestionTypes([...questionTypes, type]);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
@@ -888,6 +1012,7 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
         numberOfQuestions,
         difficulty,
         extractMode,
+        questionTypes,
       },
     });
     onNext();
@@ -1103,6 +1228,55 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
             </div>
           </div>
         )}
+
+        {/* Question Types - Only show when not in extract mode */}
+        {contentSource && !extractMode && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Question Types
+              {isQuizOrAssessment && (
+                <span className="ml-2 text-xs text-gray-500">(Auto-gradable types only for Quiz/Assessment)</span>
+              )}
+            </label>
+            <p className="text-sm text-gray-600 mb-3">
+              Select which types of questions to generate. At least one type must be selected.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {availableQuestionTypes.map((type) => (
+                <button
+                  key={type.value}
+                  type="button"
+                  onClick={() => toggleQuestionType(type.value)}
+                  className={cn(
+                    'p-3 rounded-lg border-2 transition-all text-left',
+                    questionTypes.includes(type.value)
+                      ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-100'
+                      : 'border-gray-200 hover:border-gray-300'
+                  )}
+                >
+                  <div className="flex items-center">
+                    <div className={cn(
+                      'w-5 h-5 rounded border-2 mr-2 flex-shrink-0 flex items-center justify-center',
+                      questionTypes.includes(type.value)
+                        ? 'bg-blue-600 border-blue-600'
+                        : 'border-gray-300'
+                    )}>
+                      {questionTypes.includes(type.value) && (
+                        <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-lg mb-1">{type.icon}</div>
+                      <div className="text-xs font-medium text-gray-900 truncate">{type.label}</div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex justify-between mt-8">
@@ -1288,23 +1462,23 @@ const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => 
 
       if (data.startMethod === 'import' && data.importFile && data.importOptions) {
         // Process import file
-        const { extractMode, numberOfQuestions } = data.importOptions;
-        const response = await api.generateQuestionsFromFile(assessmentId, data.importFile, numberOfQuestions || 10, extractMode);
+        const { extractMode, numberOfQuestions, questionTypes } = data.importOptions;
+        const response = await api.generateQuestionsFromFile(assessmentId, data.importFile, numberOfQuestions || 10, extractMode, questionTypes);
         jobId = response.data.jobId;
       } else if (data.questionStrategy === 'ai' && data.aiOptions) {
-        const { contentSource, textContent, file, url, numberOfQuestions, extractMode } = data.aiOptions;
+        const { contentSource, textContent, file, url, numberOfQuestions, extractMode, questionTypes } = data.aiOptions;
 
         if (contentSource === 'text' && textContent) {
           // Generate questions from text
-          const response = await api.generateQuestionsFromText(assessmentId, textContent, numberOfQuestions || 10);
+          const response = await api.generateQuestionsFromText(assessmentId, textContent, numberOfQuestions || 10, questionTypes);
           jobId = response.data.jobId;
         } else if (contentSource === 'file' && file) {
           // Generate questions from uploaded file or extract existing questions
-          const response = await api.generateQuestionsFromFile(assessmentId, file, numberOfQuestions || 10, extractMode);
+          const response = await api.generateQuestionsFromFile(assessmentId, file, numberOfQuestions || 10, extractMode, questionTypes);
           jobId = response.data.jobId;
         } else if (contentSource === 'url' && url) {
           // Generate questions from URL
-          const response = await api.generateQuestionsFromUrl(assessmentId, url, numberOfQuestions || 10);
+          const response = await api.generateQuestionsFromUrl(assessmentId, url, numberOfQuestions || 10, questionTypes);
           jobId = response.data.jobId;
         }
       } else if (data.questionStrategy === 'bank' && data.selectedQuestions) {

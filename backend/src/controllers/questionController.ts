@@ -88,7 +88,7 @@ export const generateQuestionsFromText = async (req: AuthRequest, res: Response)
   try {
     const { assessmentId } = req.params;
     const userId = req.user!.userId;
-    const { content, numberOfQuestions } = req.body;
+    const { content, numberOfQuestions, questionTypes } = req.body;
 
     const assessment = await AssessmentModel.findAssessmentById(assessmentId);
 
@@ -110,6 +110,7 @@ export const generateQuestionsFromText = async (req: AuthRequest, res: Response)
       content,
       assessmentType: assessment.type,
       numberOfQuestions: numberOfQuestions || 10,
+      questionTypes: questionTypes || undefined,
     });
 
     res.status(202).json({ message: 'Question generation started', jobId: job.id });
@@ -141,6 +142,7 @@ export const uploadFileForQuestions = async (req: AuthRequest, res: Response) =>
     const fileName = req.file.originalname;
     const numberOfQuestions = parseInt(req.body.numberOfQuestions) || 10;
     const extractMode = req.body.extractMode === 'true';
+    const questionTypes = req.body.questionTypes ? JSON.parse(req.body.questionTypes) : undefined;
 
     // Check if file format is supported by Form Recognizer
     if (!isSupportedFormat(fileName)) {
@@ -164,6 +166,7 @@ export const uploadFileForQuestions = async (req: AuthRequest, res: Response) =>
           assessmentType: assessment.type,
           numberOfQuestions,
           extractMode,
+          questionTypes,
         });
 
         return res.status(202).json({ message: 'File processing started', jobId: job.id });
@@ -221,6 +224,7 @@ export const uploadFileForQuestions = async (req: AuthRequest, res: Response) =>
       assessmentType: assessment.type,
       numberOfQuestions,
       extractMode,
+      questionTypes,
     });
 
     res.status(202).json({
@@ -238,7 +242,7 @@ export const generateQuestionsFromUrl = async (req: AuthRequest, res: Response) 
   try {
     const { assessmentId } = req.params;
     const userId = req.user!.userId;
-    const { url, numberOfQuestions } = req.body;
+    const { url, numberOfQuestions, questionTypes } = req.body;
 
     const assessment = await AssessmentModel.findAssessmentById(assessmentId);
 
@@ -264,6 +268,7 @@ export const generateQuestionsFromUrl = async (req: AuthRequest, res: Response) 
       url,
       assessmentType: assessment.type,
       numberOfQuestions: numberOfQuestions || 10,
+      questionTypes: questionTypes || undefined,
     });
 
     res.status(202).json({ message: 'URL fetching started', jobId: job.id });

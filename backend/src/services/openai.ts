@@ -19,7 +19,8 @@ const getClient = () => {
 export const generateQuestionsFromContent = async (
   content: string,
   assessmentType: string,
-  numberOfQuestions: number = 10
+  numberOfQuestions: number = 10,
+  questionTypes?: string[]
 ): Promise<any[]> => {
   const openAIClient = getClient();
 
@@ -27,26 +28,40 @@ export const generateQuestionsFromContent = async (
     throw new Error('Azure OpenAI is not configured. Please set the required environment variables.');
   }
 
+  // Default question types based on assessment type
+  const defaultQuestionTypes = (assessmentType === 'quiz' || assessmentType === 'assessment')
+    ? ['single_choice', 'multiple_choice', 'true_false']
+    : ['single_choice', 'short_answer', 'rating'];
+
+  const allowedTypes = questionTypes && questionTypes.length > 0 ? questionTypes : defaultQuestionTypes;
+  const questionTypesStr = allowedTypes.join(', ');
+
   const systemPrompt = `You are an expert at creating ${assessmentType}s. Generate high-quality questions based on the provided content.`;
 
-  const userPrompt = `Create ${numberOfQuestions} ${assessmentType === 'quiz' ? 'quiz questions with correct answers' : 'survey questions'} based on the following content:
+  const userPrompt = `Create ${numberOfQuestions} ${assessmentType === 'quiz' || assessmentType === 'assessment' ? 'quiz/assessment questions with correct answers' : 'survey questions'} based on the following content:
 
 ${content}
+
+IMPORTANT: Only generate questions of these types: ${questionTypesStr}
 
 Return the questions in the following JSON format:
 [
   {
     "question_text": "Question text here?",
-    "question_type": "single_choice" or "multiple_choice" or "text" or "rating",
-    "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-    "correct_answer": ${assessmentType === 'quiz' ? '"correct option" or ["option1", "option2"] for multiple choice' : 'null'},
-    "points": ${assessmentType === 'quiz' ? '10' : '0'}
+    "question_type": one of [${questionTypesStr}],
+    "options": ["Option 1", "Option 2", "Option 3", "Option 4"] (required for single_choice, multiple_choice, true_false),
+    "correct_answer": ${assessmentType === 'quiz' || assessmentType === 'assessment' ? '"correct option" or ["option1", "option2"] for multiple choice, or "True"/"False" for true_false' : 'null'},
+    "points": ${assessmentType === 'quiz' || assessmentType === 'assessment' ? '1' : '0'}
   }
 ]
 
 Important:
-- For ${assessmentType}, ${assessmentType === 'quiz' ? 'always include correct_answer and points' : 'set correct_answer to null and points to 0'}
-- Use "single_choice" for single answer, "multiple_choice" for multiple answers, "text" for open-ended, "rating" for scale questions
+- ONLY use question types from this list: ${questionTypesStr}
+- For ${assessmentType === 'quiz' || assessmentType === 'assessment' ? 'quiz/assessment' : 'survey'}, ${assessmentType === 'quiz' || assessmentType === 'assessment' ? 'always include correct_answer and points. Ensure answers are accurate!' : 'set correct_answer to null and points to 0'}
+- For single_choice: provide 4 options, only 1 is correct
+- For multiple_choice: provide 4+ options, multiple can be correct (return array of correct answers)
+- For true_false: options should be ["True", "False"], correct_answer should be either "True" or "False"
+- For short_answer/essay/email/number: no options needed, correct_answer can be null or a sample answer
 - Ensure questions are clear, relevant, and well-structured
 - Return only valid JSON, no additional text`;
 
@@ -88,11 +103,12 @@ export const generateQuestionsFromFile = async (
   fileContent: string,
   fileName: string,
   assessmentType: string,
-  numberOfQuestions: number = 10
+  numberOfQuestions: number = 10,
+  questionTypes?: string[]
 ): Promise<any[]> => {
   // For structured files (CSV, JSON), parse and use directly
   // For text files, use AI to generate questions
-  return generateQuestionsFromContent(fileContent, assessmentType, numberOfQuestions);
+  return generateQuestionsFromContent(fileContent, assessmentType, numberOfQuestions, questionTypes);
 };
 
 export const chatAboutResponses = async (
