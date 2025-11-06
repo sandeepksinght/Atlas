@@ -246,6 +246,151 @@ const TakeAssessment: React.FC = () => {
                 />
               )}
 
+              {question.question_type === 'short_answer' && (
+                <input
+                  type="text"
+                  value={answers[question.id] || ''}
+                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Type your answer here..."
+                />
+              )}
+
+              {question.question_type === 'essay' && (
+                <textarea
+                  value={answers[question.id] || ''}
+                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                  rows={8}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Write your detailed answer here..."
+                />
+              )}
+
+              {question.question_type === 'email' && (
+                <input
+                  type="email"
+                  value={answers[question.id] || ''}
+                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="your@email.com"
+                />
+              )}
+
+              {question.question_type === 'number' && (
+                <input
+                  type="number"
+                  value={answers[question.id] || ''}
+                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter a number"
+                />
+              )}
+
+              {question.question_type === 'date' && (
+                <input
+                  type="date"
+                  value={answers[question.id] || ''}
+                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              )}
+
+              {question.question_type === 'time' && (
+                <input
+                  type="time"
+                  value={answers[question.id] || ''}
+                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              )}
+
+              {question.question_type === 'url' && (
+                <input
+                  type="url"
+                  value={answers[question.id] || ''}
+                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="https://example.com"
+                />
+              )}
+
+              {question.question_type === 'phone' && (
+                <input
+                  type="tel"
+                  value={answers[question.id] || ''}
+                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="+1 (555) 123-4567"
+                />
+              )}
+
+              {question.question_type === 'true_false' && (
+                <div className="flex space-x-4">
+                  <button
+                    type="button"
+                    onClick={() => handleAnswerChange(question.id, 'True')}
+                    className={`flex-1 py-3 rounded-lg font-medium transition ${
+                      answers[question.id] === 'True'
+                        ? 'bg-green-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    True
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleAnswerChange(question.id, 'False')}
+                    className={`flex-1 py-3 rounded-lg font-medium transition ${
+                      answers[question.id] === 'False'
+                        ? 'bg-red-600 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    False
+                  </button>
+                </div>
+              )}
+
+              {question.question_type === 'scale' && (
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm text-gray-500 mb-2">
+                    <span>1 (Strongly Disagree)</span>
+                    <span>10 (Strongly Agree)</span>
+                  </div>
+                  <div className="flex space-x-2">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => handleAnswerChange(question.id, value)}
+                        className={`flex-1 py-2 rounded-lg font-semibold transition ${
+                          answers[question.id] === value
+                            ? 'bg-blue-600 text-white'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {question.question_type === 'dropdown' && question.options && (
+                <select
+                  value={answers[question.id] || ''}
+                  onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select an option...</option>
+                  {question.options.map((option, i) => (
+                    <option key={i} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              )}
+
               {question.question_type === 'rating' && (
                 <div className="flex space-x-2">
                   {[1, 2, 3, 4, 5].map((rating) => (
