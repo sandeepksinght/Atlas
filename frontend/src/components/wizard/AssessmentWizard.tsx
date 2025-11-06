@@ -437,6 +437,8 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
   const [file, setFile] = useState<File | null>(data.importFile || null);
   const [error, setError] = useState<string | null>(null);
   const [filePreview, setFilePreview] = useState<any>(null);
+  const [extractMode, setExtractMode] = useState(data.importOptions?.extractMode || true);
+  const [numberOfQuestions, setNumberOfQuestions] = useState(data.importOptions?.numberOfQuestions || 10);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -475,12 +477,12 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
 
   const handleNext = () => {
     if (file) {
-      // TODO: In a real implementation, we would parse the file here
-      // and extract assessment metadata (title, type, etc.)
-      // For now, we'll let the user enter that info in the next step
       updateData({
         importFile: file,
-        // We'll parse questions after assessment creation
+        importOptions: {
+          extractMode,
+          numberOfQuestions,
+        },
       });
       onNext();
     }
@@ -545,6 +547,52 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
             <li><strong>Supported question types:</strong> multiple_choice, true_false, short_answer, essay</li>
           </ul>
         </div>
+
+        {/* PDF Configuration Options */}
+        {file && file.name.toLowerCase().endsWith('.pdf') && (
+          <div className="mt-6 space-y-4">
+            <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+              <label className="flex items-start space-x-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={extractMode}
+                  onChange={(e) => setExtractMode(e.target.checked)}
+                  className="mt-1 w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                />
+                <div className="flex-1">
+                  <div className="font-semibold text-gray-900 mb-1">
+                    📋 Extract existing questions from PDF
+                  </div>
+                  <p className="text-sm text-gray-700">
+                    <strong>Checked:</strong> Extract questions already formatted in your PDF<br />
+                    <strong>Unchecked:</strong> AI will read the PDF and generate new questions
+                  </p>
+                </div>
+              </label>
+            </div>
+
+            {!extractMode && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Number of Questions to Generate: {numberOfQuestions}
+                </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="50"
+                  value={numberOfQuestions}
+                  onChange={(e) => setNumberOfQuestions(parseInt(e.target.value))}
+                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>1</span>
+                  <span>25</span>
+                  <span>50</span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex justify-between">
@@ -1235,8 +1283,12 @@ const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => 
         assessmentId = createResponse.data.id;
       }
 
-      // Step 2: Handle question generation based on strategy
-      if (data.questionStrategy === 'ai' && data.aiOptions) {
+      // Step 2: Handle question generation based on strategy or import file
+      if (data.startMethod === 'import' && data.importFile && data.importOptions) {
+        // Process import file
+        const { extractMode, numberOfQuestions } = data.importOptions;
+        await api.generateQuestionsFromFile(assessmentId, data.importFile, numberOfQuestions || 10, extractMode);
+      } else if (data.questionStrategy === 'ai' && data.aiOptions) {
         const { contentSource, textContent, file, url, numberOfQuestions, extractMode } = data.aiOptions;
 
         if (contentSource === 'text' && textContent) {
