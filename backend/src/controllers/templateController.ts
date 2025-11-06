@@ -81,21 +81,21 @@ export const templateController = {
       // Create all questions from template
       if (templateData.questions && Array.isArray(templateData.questions)) {
         for (const questionData of templateData.questions) {
-          await Question.createQuestion({
-            assessment_id: assessment.id,
-            question_text: questionData.question_text,
-            question_type: questionData.question_type,
-            options: questionData.options || null,
-            correct_answer: questionData.correct_answer || null,
-            points: questionData.points || 1,
-            explanation: questionData.explanation || null,
-            order_num: questionData.order_num || 0,
-          });
+          await Question.createQuestion(
+            assessment.id,
+            questionData.question_type,
+            questionData.question_text,
+            questionData.options || null,
+            questionData.correct_answer || null,
+            questionData.points || 1,
+            questionData.order_num || 0,
+            true // isRequired
+          );
         }
       }
 
       // Return the newly created assessment
-      res.json({ id: assessment.id, ...assessment });
+      res.json(assessment);
     } catch (error) {
       console.error('Create from template error:', error);
       res.status(500).json({ error: 'Failed to create from template' });
