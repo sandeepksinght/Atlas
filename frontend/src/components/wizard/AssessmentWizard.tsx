@@ -167,7 +167,7 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }
             <Step1ChooseStart onNext={handleNext} updateData={updateWizardData} data={wizardData} />
           )}
           {currentStep === 1 && wizardData.startMethod === 'template' && (
-            <Step1BTemplateSelect onNext={handleNext} onPrevious={handlePrevious} updateData={updateWizardData} data={wizardData} />
+            <Step1BTemplateSelect onNext={handleNext} onPrevious={handlePrevious} updateData={updateWizardData} data={wizardData} onComplete={onComplete} />
           )}
           {currentStep === 1 && wizardData.startMethod === 'import' && (
             <Step1CImportFile onNext={handleNext} onPrevious={handlePrevious} updateData={updateWizardData} data={wizardData} />
@@ -296,10 +296,11 @@ const Step1ChooseStart: React.FC<StepProps> = ({ onNext, updateData, data }) => 
 };
 
 // Step 1B: Template Selection (shown when startMethod === 'template')
-const Step1BTemplateSelect: React.FC<StepProps> = ({ onNext, onPrevious, updateData, data }) => {
+const Step1BTemplateSelect: React.FC<StepProps> = ({ onNext, onPrevious, updateData, data, onComplete }) => {
   const [templates, setTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(data.selectedTemplateId || null);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   React.useEffect(() => {
@@ -323,34 +324,41 @@ const Step1BTemplateSelect: React.FC<StepProps> = ({ onNext, onPrevious, updateD
   const handleSelectTemplate = async (templateId: string) => {
     try {
       setSelectedTemplate(templateId);
-      // Load template details
-      const response = await api.getTemplate(templateId);
-      const template = response.data;
+      setCreating(true);
+      setError(null);
 
-      // Pre-fill wizard data with template info
-      updateData({
-        selectedTemplateId: templateId,
-        title: template.title || '',
-        description: template.description || '',
-        type: template.type || 'quiz',
-        // We'll let the user go through question strategy selection
-        // since the template already has questions
-        templateQuestions: template.questions || [],
-      });
+      // Create assessment from template immediately
+      const response = await api.createFromTemplate(templateId);
+      const assessmentId = response.data.id;
+
+      // Redirect to editor
+      onComplete?.(assessmentId);
     } catch (err: any) {
-      console.error('Error loading template details:', err);
-      setError('Failed to load template details.');
+      console.error('Error creating assessment from template:', err);
+      setError(err.response?.data?.message || 'Failed to create assessment from template. Please try again.');
+      setSelectedTemplate(null);
+      setCreating(false);
     }
   };
 
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose a Template</h2>
-      <p className="text-gray-600 mb-8">Start with a pre-built template and customize it to your needs</p>
+      <p className="text-gray-600 mb-8">Click on any template to create an assessment and start editing</p>
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-700">{error}</p>
+        </div>
+      )}
+
+      {creating && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-8 max-w-md text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Creating Assessment...</h3>
+            <p className="text-gray-600">Setting up your template, please wait...</p>
+          </div>
         </div>
       )}
 
@@ -371,13 +379,20 @@ const Step1BTemplateSelect: React.FC<StepProps> = ({ onNext, onPrevious, updateD
             <button
               key={template.id}
               onClick={() => handleSelectTemplate(template.id)}
+              disabled={creating}
               className={cn(
-                'p-6 rounded-xl border-2 transition-all text-left hover:border-blue-300 h-full',
-                selectedTemplate === template.id
-                  ? 'border-blue-600 bg-blue-50 ring-2 ring-blue-100'
-                  : 'border-gray-200 hover:bg-gray-50'
+                'p-6 rounded-xl border-2 transition-all text-left hover:border-blue-400 hover:shadow-md h-full relative',
+                creating && selectedTemplate === template.id
+                  ? 'border-blue-600 bg-blue-50 opacity-75'
+                  : 'border-gray-200 hover:bg-gray-50',
+                creating && 'cursor-not-allowed opacity-50'
               )}
             >
+              {creating && selectedTemplate === template.id && (
+                <div className="absolute inset-0 flex items-center justify-center bg-blue-50 bg-opacity-90 rounded-xl">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                </div>
+              )}
               <div className="flex items-start mb-3">
                 {template.category && (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
@@ -409,11 +424,8 @@ const Step1BTemplateSelect: React.FC<StepProps> = ({ onNext, onPrevious, updateD
       )}
 
       <div className="flex justify-between">
-        <Button variant="secondary" onClick={onPrevious}>
+        <Button variant="secondary" onClick={onPrevious} disabled={creating}>
           Back
-        </Button>
-        <Button onClick={onNext} disabled={!selectedTemplate}>
-          Continue
         </Button>
       </div>
     </div>
