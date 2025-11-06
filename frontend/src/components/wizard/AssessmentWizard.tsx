@@ -61,8 +61,12 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      // Special navigation for templates: skip strategy and content steps
-      if (currentStep === 1 && wizardData.startMethod === 'template') {
+      // Special navigation for templates: skip strategy and content steps (from basic info to settings)
+      if (currentStep === 2 && wizardData.startMethod === 'template') {
+        setCurrentStep(4); // From basic info, jump directly to settings
+      }
+      // Special navigation for import: skip strategy and content steps (from basic info to settings)
+      else if (currentStep === 2 && wizardData.startMethod === 'import') {
         setCurrentStep(4); // From basic info, jump directly to settings
       }
       // If moving from step 2 (strategy) and manual is selected, skip step 3
@@ -76,9 +80,13 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }
 
   const handlePrevious = () => {
     if (currentStep > 0) {
-      // Special navigation for templates: skip strategy and content steps
+      // Special navigation for templates: skip strategy and content steps (from settings back to basic info)
       if (currentStep === 4 && wizardData.startMethod === 'template') {
-        setCurrentStep(1); // From settings, jump back to basic info
+        setCurrentStep(2); // From settings, jump back to basic info
+      }
+      // Special navigation for import: skip strategy and content steps (from settings back to basic info)
+      else if (currentStep === 4 && wizardData.startMethod === 'import') {
+        setCurrentStep(2); // From settings, jump back to basic info
       }
       // If moving back from step 4 (settings) and manual is selected, skip step 3
       else if (currentStep === 4 && wizardData.questionStrategy === 'manual') {
@@ -161,10 +169,16 @@ export const AssessmentWizard: React.FC<AssessmentWizardProps> = ({ onComplete }
           {currentStep === 1 && wizardData.startMethod === 'template' && (
             <Step1BTemplateSelect onNext={handleNext} onPrevious={handlePrevious} updateData={updateWizardData} data={wizardData} />
           )}
-          {currentStep === 1 && wizardData.startMethod !== 'template' && (
+          {currentStep === 1 && wizardData.startMethod === 'import' && (
+            <Step1CImportFile onNext={handleNext} onPrevious={handlePrevious} updateData={updateWizardData} data={wizardData} />
+          )}
+          {currentStep === 1 && wizardData.startMethod !== 'template' && wizardData.startMethod !== 'import' && (
             <Step2BasicInfo onNext={handleNext} onPrevious={handlePrevious} updateData={updateWizardData} data={wizardData} />
           )}
-          {currentStep === 2 && (
+          {currentStep === 2 && (wizardData.startMethod === 'template' || wizardData.startMethod === 'import') && (
+            <Step2BasicInfo onNext={handleNext} onPrevious={handlePrevious} updateData={updateWizardData} data={wizardData} />
+          )}
+          {currentStep === 2 && wizardData.startMethod !== 'template' && wizardData.startMethod !== 'import' && (
             <Step3Strategy onNext={handleNext} onPrevious={handlePrevious} onSkip={handleSkip} updateData={updateWizardData} data={wizardData} />
           )}
           {currentStep === 3 && wizardData.questionStrategy === 'ai' && (
@@ -399,6 +413,131 @@ const Step1BTemplateSelect: React.FC<StepProps> = ({ onNext, onPrevious, updateD
           Back
         </Button>
         <Button onClick={onNext} disabled={!selectedTemplate}>
+          Continue
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// Step 1C: Import from File (shown when startMethod === 'import')
+const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData, data }) => {
+  const [file, setFile] = useState<File | null>(data.importFile || null);
+  const [error, setError] = useState<string | null>(null);
+  const [filePreview, setFilePreview] = useState<any>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      // Validate file type
+      const validTypes = [
+        'text/csv',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/json',
+      ];
+
+      const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase();
+      const isValidExtension = ['csv', 'xls', 'xlsx', 'json'].includes(fileExtension || '');
+
+      if (!isValidExtension && !validTypes.includes(selectedFile.type)) {
+        setError('Invalid file type. Please upload a CSV, Excel, or JSON file.');
+        setFile(null);
+        return;
+      }
+
+      // Validate file size (max 10MB)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (selectedFile.size > maxSize) {
+        setError('File size exceeds 10MB. Please choose a smaller file.');
+        setFile(null);
+        return;
+      }
+
+      setError(null);
+      setFile(selectedFile);
+      updateData({ importFile: selectedFile });
+    }
+  };
+
+  const handleNext = () => {
+    if (file) {
+      // TODO: In a real implementation, we would parse the file here
+      // and extract assessment metadata (title, type, etc.)
+      // For now, we'll let the user enter that info in the next step
+      updateData({
+        importFile: file,
+        // We'll parse questions after assessment creation
+      });
+      onNext();
+    }
+  };
+
+  return (
+    <div>
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">Import Questions from File</h2>
+      <p className="text-gray-600 mb-8">Upload a CSV, Excel, or JSON file containing your questions</p>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-red-600 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        </div>
+      )}
+
+      <div className="mb-8">
+        <div className="border-2 border-dashed border-gray-300 rounded-xl p-12 text-center hover:border-blue-400 transition">
+          <input
+            type="file"
+            onChange={handleFileChange}
+            accept=".csv,.xls,.xlsx,.json"
+            className="hidden"
+            id="import-file-upload"
+          />
+          <label htmlFor="import-file-upload" className="cursor-pointer">
+            <div className="text-6xl mb-4">📤</div>
+            {file ? (
+              <div>
+                <p className="text-xl font-semibold text-gray-900 mb-2">{file.name}</p>
+                <p className="text-sm text-gray-600 mb-1">
+                  {(file.size / 1024).toFixed(2)} KB
+                </p>
+                <p className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  Click to change file
+                </p>
+              </div>
+            ) : (
+              <div>
+                <p className="text-xl font-semibold text-gray-900 mb-2">
+                  Click to upload or drag and drop
+                </p>
+                <p className="text-sm text-gray-600">
+                  CSV, Excel (XLS, XLSX), or JSON files (Max 10MB)
+                </p>
+              </div>
+            )}
+          </label>
+        </div>
+
+        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <h3 className="text-sm font-semibold text-blue-900 mb-2">📋 File Format Requirements:</h3>
+          <ul className="text-sm text-blue-800 space-y-1 ml-4 list-disc">
+            <li><strong>CSV/Excel:</strong> Columns should include: question_text, question_type, correct_answer, options (for multiple choice)</li>
+            <li><strong>JSON:</strong> Array of question objects with properties: question_text, question_type, correct_answer, options</li>
+            <li><strong>Supported question types:</strong> multiple_choice, true_false, short_answer, essay</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="flex justify-between">
+        <Button variant="secondary" onClick={onPrevious}>
+          Back
+        </Button>
+        <Button onClick={handleNext} disabled={!file}>
           Continue
         </Button>
       </div>
@@ -1139,6 +1278,24 @@ const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => 
                 </svg>
                 <span className="font-semibold">{data.templateQuestions.length}</span>
                 <span className="ml-1">pre-built questions from template</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Import File Details */}
+        {data.startMethod === 'import' && data.importFile && (
+          <div>
+            <div className="text-sm font-medium text-gray-500">Imported File</div>
+            <div className="text-gray-700">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <div className="font-semibold">{data.importFile.name}</div>
+                  <div className="text-xs text-gray-500">{(data.importFile.size / 1024).toFixed(2)} KB</div>
+                </div>
               </div>
             </div>
           </div>
