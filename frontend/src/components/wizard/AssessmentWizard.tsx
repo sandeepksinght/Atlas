@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { cn } from '../../utils/cn';
+import * as api from '../../services/api';
 
 interface WizardStep {
   id: string;
@@ -877,20 +878,73 @@ const Step5Settings: React.FC<StepProps> = ({ onNext, onPrevious, updateData, da
 // Step 6: Preview & Publish
 const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => {
   const [creating, setCreating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFinish = async () => {
     setCreating(true);
-    // In a real implementation, this would create the assessment
-    // For now, just simulate
-    setTimeout(() => {
-      onComplete?.('new-assessment-id');
-    }, 1500);
+    setError(null);
+
+    try {
+      // Step 1: Create the assessment with basic info
+      const assessmentData = {
+        title: data.title,
+        description: data.description || '',
+        type: data.type || 'quiz',
+        settings: data.settings || {},
+        is_published: false,
+      };
+
+      const createResponse = await api.createAssessment(assessmentData);
+      const assessmentId = createResponse.data.id;
+
+      // Step 2: Handle question generation based on strategy
+      if (data.questionStrategy === 'ai' && data.aiOptions) {
+        const { contentSource, textContent, file, url, numberOfQuestions } = data.aiOptions;
+
+        if (contentSource === 'text' && textContent) {
+          // Generate questions from text
+          await api.generateQuestionsFromText(assessmentId, textContent, numberOfQuestions || 10);
+        } else if (contentSource === 'file' && file) {
+          // Generate questions from uploaded file
+          await api.generateQuestionsFromFile(assessmentId, file, numberOfQuestions || 10);
+        } else if (contentSource === 'url' && url) {
+          // Generate questions from URL
+          await api.generateQuestionsFromUrl(assessmentId, url, numberOfQuestions || 10);
+        }
+      } else if (data.questionStrategy === 'bank' && data.selectedQuestions) {
+        // TODO: Implement adding questions from question bank
+        // For now, questions from bank need to be manually copied
+        console.log('Question bank integration pending - selected questions:', data.selectedQuestions);
+      }
+      // For 'manual' strategy, just create empty assessment
+
+      // Step 3: Redirect to editor
+      onComplete?.(assessmentId);
+    } catch (err: any) {
+      console.error('Error creating assessment:', err);
+      setError(err.response?.data?.message || 'Failed to create assessment. Please try again.');
+      setCreating(false);
+    }
   };
 
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900 mb-2">Review & Finish</h2>
       <p className="text-gray-600 mb-8">Review your assessment configuration</p>
+
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-red-600 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <h3 className="text-sm font-medium text-red-800">Error Creating Assessment</h3>
+              <p className="text-sm text-red-700 mt-1">{error}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-gray-50 rounded-lg p-6 space-y-4 mb-8">
         <div>
@@ -957,13 +1011,31 @@ const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => 
       </div>
 
       <div className="flex justify-between">
-        <Button variant="secondary" onClick={onPrevious}>
+        <Button variant="secondary" onClick={onPrevious} disabled={creating}>
           Back
         </Button>
         <Button onClick={handleFinish} loading={creating}>
-          {creating ? 'Creating Assessment...' : 'Finish & Create'}
+          {creating
+            ? data.questionStrategy === 'ai'
+              ? 'Creating & Generating Questions...'
+              : 'Creating Assessment...'
+            : 'Finish & Create'}
         </Button>
       </div>
+
+      {data.questionStrategy === 'ai' && !error && (
+        <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-blue-600 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+            </svg>
+            <div className="text-sm text-blue-800">
+              <strong>Note:</strong> AI question generation will start once you create the assessment.
+              You'll be redirected to the editor where you can monitor the progress and review generated questions.
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
