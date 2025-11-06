@@ -447,13 +447,14 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
         'application/vnd.ms-excel',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         'application/json',
+        'application/pdf',
       ];
 
       const fileExtension = selectedFile.name.split('.').pop()?.toLowerCase();
-      const isValidExtension = ['csv', 'xls', 'xlsx', 'json'].includes(fileExtension || '');
+      const isValidExtension = ['csv', 'xls', 'xlsx', 'json', 'pdf'].includes(fileExtension || '');
 
       if (!isValidExtension && !validTypes.includes(selectedFile.type)) {
-        setError('Invalid file type. Please upload a CSV, Excel, or JSON file.');
+        setError('Invalid file type. Please upload a CSV, Excel, JSON, or PDF file.');
         setFile(null);
         return;
       }
@@ -488,7 +489,7 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-900 mb-2">Import Questions from File</h2>
-      <p className="text-gray-600 mb-8">Upload a CSV, Excel, or JSON file containing your questions</p>
+      <p className="text-gray-600 mb-8">Upload a CSV, Excel, JSON, or PDF file containing your questions</p>
 
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -506,7 +507,7 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
           <input
             type="file"
             onChange={handleFileChange}
-            accept=".csv,.xls,.xlsx,.json"
+            accept=".csv,.xls,.xlsx,.json,.pdf"
             className="hidden"
             id="import-file-upload"
           />
@@ -528,7 +529,7 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
                   Click to upload or drag and drop
                 </p>
                 <p className="text-sm text-gray-600">
-                  CSV, Excel (XLS, XLSX), or JSON files (Max 10MB)
+                  CSV, Excel (XLS, XLSX), JSON, or PDF files (Max 10MB)
                 </p>
               </div>
             )}
@@ -540,6 +541,7 @@ const Step1CImportFile: React.FC<StepProps> = ({ onNext, onPrevious, updateData,
           <ul className="text-sm text-blue-800 space-y-1 ml-4 list-disc">
             <li><strong>CSV/Excel:</strong> Columns should include: question_text, question_type, correct_answer, options (for multiple choice)</li>
             <li><strong>JSON:</strong> Array of question objects with properties: question_text, question_type, correct_answer, options</li>
+            <li><strong>PDF:</strong> Numbered questions (1., 2., Q1, Q2, etc.) with answers marked as "Answer:" - questions will be extracted using AI</li>
             <li><strong>Supported question types:</strong> multiple_choice, true_false, short_answer, essay</li>
           </ul>
         </div>
