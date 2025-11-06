@@ -655,20 +655,38 @@ const ViewResponses: React.FC = () => {
               </button>
 
               {generatedSummary && (
-                <div className="mt-6 p-6 bg-gray-50 rounded-lg">
-                  <h3 className="font-semibold text-gray-900 mb-3">Generated Summary</h3>
-                  <div className="prose prose-sm max-w-none prose-table:text-sm prose-thead:bg-gray-100 prose-th:border prose-th:border-gray-300 prose-th:p-2 prose-td:border prose-td:border-gray-300 prose-td:p-2">
+                <div className="mt-6 p-8 bg-white border border-gray-200 rounded-lg shadow-sm">
+                  <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200">
+                    <h3 className="text-xl font-bold text-gray-900">Generated Summary</h3>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(generatedSummary);
+                        toast.success('Summary copied to clipboard');
+                      }}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                      Copy
+                    </button>
+                  </div>
+                  <div className="prose prose-lg max-w-none
+                    prose-headings:font-bold prose-headings:text-gray-900 prose-headings:mb-4 prose-headings:mt-8 first:prose-headings:mt-0
+                    prose-h2:text-2xl prose-h2:border-b prose-h2:border-gray-200 prose-h2:pb-2
+                    prose-h3:text-xl
+                    prose-p:text-gray-700 prose-p:leading-relaxed prose-p:mb-4
+                    prose-a:text-purple-600 prose-a:no-underline hover:prose-a:underline
+                    prose-strong:text-gray-900 prose-strong:font-semibold
+                    prose-ul:my-4 prose-ul:space-y-2
+                    prose-ol:my-4 prose-ol:space-y-2
+                    prose-li:text-gray-700 prose-li:leading-relaxed
+                    prose-blockquote:border-l-4 prose-blockquote:border-purple-500 prose-blockquote:pl-4 prose-blockquote:italic prose-blockquote:text-gray-600
+                    prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:text-purple-600
+                    prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:p-4 prose-pre:rounded-lg prose-pre:overflow-x-auto
+                    prose-hr:my-8 prose-hr:border-gray-300">
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{generatedSummary}</ReactMarkdown>
                   </div>
-                  <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(generatedSummary);
-                      toast.success('Summary copied to clipboard');
-                    }}
-                    className="mt-4 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-                  >
-                    Copy to Clipboard
-                  </button>
                 </div>
               )}
             </div>
