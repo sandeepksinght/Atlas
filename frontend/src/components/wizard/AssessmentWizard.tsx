@@ -1284,22 +1284,28 @@ const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => 
       }
 
       // Step 2: Handle question generation based on strategy or import file
+      let jobId: string | null = null;
+
       if (data.startMethod === 'import' && data.importFile && data.importOptions) {
         // Process import file
         const { extractMode, numberOfQuestions } = data.importOptions;
-        await api.generateQuestionsFromFile(assessmentId, data.importFile, numberOfQuestions || 10, extractMode);
+        const response = await api.generateQuestionsFromFile(assessmentId, data.importFile, numberOfQuestions || 10, extractMode);
+        jobId = response.data.jobId;
       } else if (data.questionStrategy === 'ai' && data.aiOptions) {
         const { contentSource, textContent, file, url, numberOfQuestions, extractMode } = data.aiOptions;
 
         if (contentSource === 'text' && textContent) {
           // Generate questions from text
-          await api.generateQuestionsFromText(assessmentId, textContent, numberOfQuestions || 10);
+          const response = await api.generateQuestionsFromText(assessmentId, textContent, numberOfQuestions || 10);
+          jobId = response.data.jobId;
         } else if (contentSource === 'file' && file) {
           // Generate questions from uploaded file or extract existing questions
-          await api.generateQuestionsFromFile(assessmentId, file, numberOfQuestions || 10, extractMode);
+          const response = await api.generateQuestionsFromFile(assessmentId, file, numberOfQuestions || 10, extractMode);
+          jobId = response.data.jobId;
         } else if (contentSource === 'url' && url) {
           // Generate questions from URL
-          await api.generateQuestionsFromUrl(assessmentId, url, numberOfQuestions || 10);
+          const response = await api.generateQuestionsFromUrl(assessmentId, url, numberOfQuestions || 10);
+          jobId = response.data.jobId;
         }
       } else if (data.questionStrategy === 'bank' && data.selectedQuestions) {
         // TODO: Implement adding questions from question bank
@@ -1308,7 +1314,33 @@ const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => 
       }
       // For 'manual' strategy, just create empty assessment
 
-      // Step 3: Redirect to editor
+      // Step 3: Wait for job to complete if applicable
+      if (jobId) {
+        let attempts = 0;
+        const maxAttempts = 60; // 60 seconds max wait time
+
+        while (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
+
+          const jobResponse = await api.getJob(jobId);
+          const job = jobResponse.data;
+
+          if (job.status === 'completed') {
+            console.log('Job completed successfully:', job);
+            break;
+          } else if (job.status === 'failed') {
+            throw new Error(job.error || 'Question generation failed');
+          }
+
+          attempts++;
+        }
+
+        if (attempts >= maxAttempts) {
+          throw new Error('Question generation timed out. Please check the editor - questions may still be processing.');
+        }
+      }
+
+      // Step 4: Redirect to editor
       onComplete?.(assessmentId);
     } catch (err: any) {
       console.error('Error creating assessment:', err);
