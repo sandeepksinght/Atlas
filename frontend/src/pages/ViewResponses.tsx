@@ -36,9 +36,12 @@ const ViewResponses: React.FC = () => {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [existingSummary, setExistingSummary] = useState<any>(null);
   const [showReplaceDialog, setShowReplaceDialog] = useState(false);
+  const [savedSummaries, setSavedSummaries] = useState<any[]>([]);
+  const [showSavedSummaries, setShowSavedSummaries] = useState(false);
 
   useEffect(() => {
     loadData();
+    loadSavedSummaries();
   }, [id]);
 
   const loadData = async () => {
@@ -55,6 +58,15 @@ const ViewResponses: React.FC = () => {
       toast.error('Failed to load responses');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadSavedSummaries = async () => {
+    try {
+      const response = await api.getAllSummaries(id!);
+      setSavedSummaries(response.data);
+    } catch (error) {
+      console.error('Failed to load saved summaries:', error);
     }
   };
 
@@ -175,6 +187,7 @@ const ViewResponses: React.FC = () => {
       setGeneratedSummary(response.data.summary);
       if (saveToDatabase && response.data.savedSummary) {
         toast.success('Summary generated and saved!');
+        loadSavedSummaries(); // Reload summaries list
       }
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Failed to generate summary');
@@ -296,6 +309,16 @@ const ViewResponses: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
                 <span>Generate Summary</span>
+              </button>
+              <button
+                onClick={() => setShowSavedSummaries(true)}
+                className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition flex items-center space-x-2"
+                disabled={savedSummaries.length === 0}
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Saved Summaries ({savedSummaries.length})</span>
               </button>
               <button
                 onClick={() => setChatOpen(!chatOpen)}
@@ -467,11 +490,11 @@ const ViewResponses: React.FC = () => {
               <div key={index} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-900'}`}>
                   {message.role === 'assistant' ? (
-                    <ReactMarkdown className="text-sm prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-900 prose-li:text-gray-900 prose-strong:text-gray-900">
+                    <ReactMarkdown className="text-xs prose prose-sm max-w-none prose-headings:text-xs prose-p:text-xs prose-li:text-xs prose-strong:text-xs prose-table:text-xs">
                       {message.content}
                     </ReactMarkdown>
                   ) : (
-                    <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    <p className="text-xs whitespace-pre-wrap">{message.content}</p>
                   )}
                 </div>
               </div>
@@ -630,7 +653,7 @@ const ViewResponses: React.FC = () => {
               {generatedSummary && (
                 <div className="mt-6 p-6 bg-gray-50 rounded-lg">
                   <h3 className="font-semibold text-gray-900 mb-3">Generated Summary</h3>
-                  <div className="prose prose-sm max-w-none">
+                  <div className="prose prose-sm max-w-none prose-table:text-sm prose-thead:bg-gray-100 prose-th:border prose-th:border-gray-300 prose-th:p-2 prose-td:border prose-td:border-gray-300 prose-td:p-2">
                     <ReactMarkdown>{generatedSummary}</ReactMarkdown>
                   </div>
                   <button
@@ -719,6 +742,87 @@ const ViewResponses: React.FC = () => {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setSelectedResponse(null)}
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Saved Summaries Modal */}
+      {showSavedSummaries && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200 sticky top-0 bg-white">
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-900">Saved Summaries</h2>
+                <button onClick={() => setShowSavedSummaries(false)} className="text-gray-400 hover:text-gray-600">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <div className="p-6">
+              {savedSummaries.length === 0 ? (
+                <div className="text-center py-12">
+                  <svg className="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <p className="text-gray-600">No summaries saved yet</p>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {savedSummaries.map((summary) => (
+                    <div key={summary.id} className="border border-gray-200 rounded-lg p-6 hover:border-amber-300 transition">
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="text-lg font-semibold text-gray-900 capitalize">
+                              {summary.summary_type.replace('-', ' ')}
+                            </h3>
+                            <span className="px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full font-medium">
+                              Version {summary.version}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-500">
+                            Created on {new Date(summary.created_at).toLocaleString()}
+                          </p>
+                          {summary.custom_instructions && (
+                            <p className="text-xs text-gray-600 mt-1 italic">
+                              Custom instructions: {summary.custom_instructions}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                        <div className="prose prose-sm max-w-none prose-table:text-sm prose-thead:bg-gray-100 prose-th:border prose-th:border-gray-300 prose-th:p-2 prose-td:border prose-td:border-gray-300 prose-td:p-2">
+                          <ReactMarkdown>{summary.content}</ReactMarkdown>
+                        </div>
+                      </div>
+                      <div className="mt-4 flex gap-2">
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(summary.content);
+                            toast.success('Summary copied to clipboard');
+                          }}
+                          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm"
+                        >
+                          Copy to Clipboard
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="p-6 border-t border-gray-200 flex justify-end">
+              <button
+                onClick={() => setShowSavedSummaries(false)}
                 className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
               >
                 Close
