@@ -1491,7 +1491,7 @@ const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => 
       // Step 3: Wait for job to complete if applicable
       if (jobId) {
         let attempts = 0;
-        const maxAttempts = 60; // 60 seconds max wait time
+        const maxAttempts = 120; // 120 seconds (2 minutes) max wait time
 
         while (attempts < maxAttempts) {
           await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1 second
@@ -1510,7 +1510,8 @@ const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => 
         }
 
         if (attempts >= maxAttempts) {
-          throw new Error('Question generation timed out. Please check the editor - questions may still be processing.');
+          // Timeout - but don't throw error, just log and continue to editor
+          console.warn('Question generation is taking longer than expected. Questions will load in the background.');
         }
       }
 
