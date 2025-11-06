@@ -83,18 +83,43 @@ export const TypeFormEditor: React.FC = () => {
       const data = response.data;
 
       // Parse questions and ensure correct_answer and points are set
-      const loadedQuestions = (data.questions || []).map((q: any) => ({
-        id: q.id.toString(),
-        question_text: q.question_text,
-        question_type: q.question_type,
-        description: q.description,
-        options: typeof q.options === 'string' ? JSON.parse(q.options) : q.options,
-        correct_answer: q.correct_answer ? (typeof q.correct_answer === 'string' ? JSON.parse(q.correct_answer) : q.correct_answer) : null,
-        points: q.points || 100,
-        required: q.is_required || false,
-        min: q.min,
-        max: q.max,
-      }));
+      const loadedQuestions = (data.questions || []).map((q: any) => {
+        let options = q.options;
+        let correct_answer = q.correct_answer;
+
+        // Parse options if it's a string
+        if (typeof q.options === 'string') {
+          try {
+            options = JSON.parse(q.options);
+          } catch (e) {
+            console.error('Failed to parse options for question:', q.id, 'Options value:', q.options);
+            options = null; // Set to null if parsing fails
+          }
+        }
+
+        // Parse correct_answer if it's a string
+        if (q.correct_answer && typeof q.correct_answer === 'string') {
+          try {
+            correct_answer = JSON.parse(q.correct_answer);
+          } catch (e) {
+            console.error('Failed to parse correct_answer for question:', q.id, 'Value:', q.correct_answer);
+            correct_answer = null; // Set to null if parsing fails
+          }
+        }
+
+        return {
+          id: q.id.toString(),
+          question_text: q.question_text,
+          question_type: q.question_type,
+          description: q.description,
+          options,
+          correct_answer,
+          points: q.points || 100,
+          required: q.is_required || false,
+          min: q.min,
+          max: q.max,
+        };
+      });
 
       setAssessment({
         id: data.id.toString(),
