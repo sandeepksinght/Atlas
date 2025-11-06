@@ -80,15 +80,38 @@ export const templateController = {
 
       // Create all questions from template
       if (templateData.questions && Array.isArray(templateData.questions)) {
-        for (const questionData of templateData.questions) {
+        console.log('Creating questions from template. Total questions:', templateData.questions.length);
+
+        for (let i = 0; i < templateData.questions.length; i++) {
+          const questionData = templateData.questions[i];
+
+          // Handle different possible field names in templates
+          const questionType = questionData.question_type || questionData.type || questionData.questionType;
+          const questionText = questionData.question_text || questionData.text || questionData.questionText || questionData.title;
+          const options = questionData.options || questionData.choices || null;
+          const correctAnswer = questionData.correct_answer || questionData.correctAnswer || questionData.answer || null;
+          const points = questionData.points || 1;
+          const orderNum = questionData.order_num || questionData.orderNum || questionData.order || i;
+
+          // Log if we're missing required fields
+          if (!questionType || !questionText) {
+            console.error('Missing required question fields:', {
+              index: i,
+              questionType,
+              questionText,
+              availableFields: Object.keys(questionData)
+            });
+            continue; // Skip this question
+          }
+
           await Question.createQuestion(
             assessment.id,
-            questionData.question_type,
-            questionData.question_text,
-            questionData.options || null,
-            questionData.correct_answer || null,
-            questionData.points || 1,
-            questionData.order_num || 0,
+            questionType,
+            questionText,
+            options,
+            correctAnswer,
+            points,
+            orderNum,
             true // isRequired
           );
         }
