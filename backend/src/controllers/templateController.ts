@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
 import { Template } from '../models/template';
+import * as Assessment from '../models/Assessment';
+import * as Question from '../models/Question';
 
 export const templateController = {
   // Get all templates (system + user's templates)
@@ -61,8 +63,39 @@ export const templateController = {
       // Increment usage count
       await Template.incrementUsage(id);
 
-      // Return the template data for the client to create an assessment
-      res.json({ template_data: template.assessment_data });
+      // Parse the template data
+      const templateData = typeof template.assessment_data === 'string'
+        ? JSON.parse(template.assessment_data)
+        : template.assessment_data;
+
+      // Create new assessment from template
+      const assessment = await Assessment.createAssessment(
+        userId,
+        templateData.title || template.name,
+        templateData.description || template.description || '',
+        templateData.type || 'quiz',
+        templateData.settings || {},
+        null // project_id
+      );
+
+      // Create all questions from template
+      if (templateData.questions && Array.isArray(templateData.questions)) {
+        for (const questionData of templateData.questions) {
+          await Question.createQuestion({
+            assessment_id: assessment.id,
+            question_text: questionData.question_text,
+            question_type: questionData.question_type,
+            options: questionData.options || null,
+            correct_answer: questionData.correct_answer || null,
+            points: questionData.points || 1,
+            explanation: questionData.explanation || null,
+            order_num: questionData.order_num || 0,
+          });
+        }
+      }
+
+      // Return the newly created assessment
+      res.json({ id: assessment.id, ...assessment });
     } catch (error) {
       console.error('Create from template error:', error);
       res.status(500).json({ error: 'Failed to create from template' });
