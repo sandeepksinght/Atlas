@@ -2,35 +2,307 @@
 <html lang="en" dir="ltr">
 	<head>
 		<meta charset="utf-8">
-		<title></title>
+		<title>Atlas - Your AI Assistant</title>
+		<style>
+			/* General body styling */
+			body {
+				font-family: Arial, sans-serif;
+				margin: 0;
+				padding: 20px;
+				background-color: #f5f5f5;
+			}
+
+			h1 {
+				color: #333;
+				text-align: center;
+				margin-bottom: 30px;
+			}
+
+			/* Summaries section styling */
+			.summaries-container {
+				max-width: 1200px;
+				margin: 0 auto 30px auto;
+				background-color: white;
+				border-radius: 8px;
+				box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+				padding: 20px;
+			}
+
+			.summaries-header {
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+				margin-bottom: 20px;
+				cursor: pointer;
+				padding: 10px;
+				background-color: #f8f9fa;
+				border-radius: 5px;
+			}
+
+			.summaries-header:hover {
+				background-color: #e9ecef;
+			}
+
+			.summaries-header h2 {
+				margin: 0;
+				color: #2c3e50;
+				font-size: 1.3em;
+			}
+
+			.toggle-icon {
+				font-size: 1.2em;
+				transition: transform 0.3s;
+			}
+
+			.toggle-icon.collapsed {
+				transform: rotate(-90deg);
+			}
+
+			.summaries-list {
+				max-height: 400px;
+				overflow-y: auto;
+				display: none;
+			}
+
+			.summaries-list.expanded {
+				display: block;
+			}
+
+			.summary-item {
+				border-left: 4px solid #3498db;
+				padding: 15px;
+				margin-bottom: 15px;
+				background-color: #f8f9fa;
+				border-radius: 4px;
+				transition: all 0.3s;
+			}
+
+			.summary-item:hover {
+				background-color: #e9ecef;
+				box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+			}
+
+			.summary-meta {
+				display: flex;
+				justify-content: space-between;
+				margin-bottom: 10px;
+				font-size: 0.9em;
+				color: #666;
+			}
+
+			.summary-version {
+				font-weight: bold;
+				color: #3498db;
+			}
+
+			.summary-timestamp {
+				color: #888;
+			}
+
+			.summary-content {
+				color: #333;
+				line-height: 1.6;
+				font-size: 0.95em;
+			}
+
+			/* Table styling for summaries */
+			.summary-content table {
+				width: 100%;
+				border-collapse: collapse;
+				margin: 10px 0;
+				font-size: 0.9em;
+				background-color: white;
+			}
+
+			.summary-content table th,
+			.summary-content table td {
+				border: 1px solid #ddd;
+				padding: 8px 12px;
+				text-align: left;
+			}
+
+			.summary-content table th {
+				background-color: #3498db;
+				color: white;
+				font-weight: bold;
+			}
+
+			.summary-content table tr:nth-child(even) {
+				background-color: #f9f9f9;
+			}
+
+			.summary-content table tr:hover {
+				background-color: #f1f1f1;
+			}
+
+			/* Webchat custom styling */
+			.rw-conversation-container {
+				font-size: 14px !important;
+			}
+
+			.rw-message {
+				font-size: 14px !important;
+			}
+
+			.rw-response {
+				font-size: 14px !important;
+			}
+
+			.rw-client {
+				font-size: 14px !important;
+			}
+
+			/* Table styling in webchat messages */
+			.rw-response table,
+			.rw-message table {
+				width: 100%;
+				border-collapse: collapse;
+				margin: 10px 0;
+				font-size: 0.9em;
+				background-color: white;
+			}
+
+			.rw-response table th,
+			.rw-response table td,
+			.rw-message table th,
+			.rw-message table td {
+				border: 1px solid #ddd;
+				padding: 6px 10px;
+				text-align: left;
+			}
+
+			.rw-response table th,
+			.rw-message table th {
+				background-color: #3498db;
+				color: white;
+				font-weight: bold;
+			}
+
+			.rw-response table tr:nth-child(even),
+			.rw-message table tr:nth-child(even) {
+				background-color: #f9f9f9;
+			}
+
+			/* Input field styling */
+			.rw-sender input {
+				font-size: 14px !important;
+			}
+
+			/* No summaries message */
+			.no-summaries {
+				text-align: center;
+				padding: 20px;
+				color: #999;
+				font-style: italic;
+			}
+		</style>
 	</head>
-
-<h1>Welcome to Atlas!</h1>
-
-
 	<body>
-		<script>!function(){
-			let e=document.createElement("script"),
-			t=document.head||document.getElementsByTagName("head")[0];
-			e.src=
-			"https://cdn.jsdelivr.net/npm/rasa-webchat@1.x.x/lib/index.js",
-			e.async=!0,e.onload=(()=>{
-				window.WebChat.default(
-					{
-						initPayload: "/get_started",
-						title: "Atlas",
-						subtitle:"Let's go!",
-						inputTextFieldHint: "Your response here...",
-						fullScreenMode: true,
-   						 showFullScreenButton: true,
+		<h1>Welcome to Atlas!</h1>
+
+		<!-- Saved Summaries Section -->
+		<div class="summaries-container">
+			<div class="summaries-header" onclick="toggleSummaries()">
+				<h2>📋 Saved Summaries</h2>
+				<span class="toggle-icon" id="toggleIcon">▼</span>
+			</div>
+			<div class="summaries-list" id="summariesList">
+				<div class="no-summaries">No summaries saved yet. Your conversation summaries will appear here.</div>
+			</div>
+		</div>
+
+		<!-- Rasa Webchat -->
+		<script>
+			// Toggle summaries section
+			function toggleSummaries() {
+				const list = document.getElementById('summariesList');
+				const icon = document.getElementById('toggleIcon');
+
+				if (list.classList.contains('expanded')) {
+					list.classList.remove('expanded');
+					icon.classList.add('collapsed');
+				} else {
+					list.classList.add('expanded');
+					icon.classList.remove('collapsed');
+				}
+			}
+
+			// Load and display summaries
+			function loadSummaries() {
+				const summaries = JSON.parse(localStorage.getItem('atlas_summaries') || '[]');
+				const listElement = document.getElementById('summariesList');
+
+				if (summaries.length === 0) {
+					listElement.innerHTML = '<div class="no-summaries">No summaries saved yet. Your conversation summaries will appear here.</div>';
+					return;
+				}
+
+				listElement.innerHTML = summaries.map((summary, index) => `
+					<div class="summary-item">
+						<div class="summary-meta">
+							<span class="summary-version">Version ${summary.version}</span>
+							<span class="summary-timestamp">${summary.timestamp}</span>
+						</div>
+						<div class="summary-content">${summary.content}</div>
+					</div>
+				`).reverse().join('');
+			}
+
+			// Save a new summary
+			function saveSummary(content) {
+				const summaries = JSON.parse(localStorage.getItem('atlas_summaries') || '[]');
+				const timestamp = new Date().toLocaleString('en-US', {
+					year: 'numeric',
+					month: 'short',
+					day: 'numeric',
+					hour: '2-digit',
+					minute: '2-digit',
+					second: '2-digit'
+				});
+
+				summaries.push({
+					version: summaries.length + 1,
+					timestamp: timestamp,
+					content: content
+				});
+
+				localStorage.setItem('atlas_summaries', JSON.stringify(summaries));
+				loadSummaries();
+			}
+
+			// Initialize summaries on page load
+			window.addEventListener('DOMContentLoaded', () => {
+				loadSummaries();
+			});
+
+			// Initialize Rasa Webchat
+			!function(){
+				let e=document.createElement("script"),
+				t=document.head||document.getElementsByTagName("head")[0];
+				e.src="https://cdn.jsdelivr.net/npm/rasa-webchat@1.x.x/lib/index.js",
+				e.async=!0,e.onload=(()=>{
+					window.WebChat.default(
+						{
+							initPayload: "/get_started",
+							title: "Atlas",
+							subtitle:"Let's go!",
+							inputTextFieldHint: "Your response here...",
+							fullScreenMode: true,
+							showFullScreenButton: true,
 							profileAvatar: "C:/Users/sande/OneDrive/Desktop/fiverr/boticon.png",
-						customData:{
-							current_url:window.location.href},socketUrl:"http://172.105.54.31:5005"},null)
-							}),
-							t.insertBefore(e,t.firstChild)}();
-							//window.onload = WebChat.open;
-							localStorage.removeItem("chat_session");
-						
-							</script>
+							customData:{
+								current_url:window.location.href
+							},
+							socketUrl:"http://172.105.54.31:5005"
+						},
+						null
+					)
+				}),
+				t.insertBefore(e,t.firstChild)
+			}();
+
+			//window.onload = WebChat.open;
+			localStorage.removeItem("chat_session");
+		</script>
 	</body>
 </html>
