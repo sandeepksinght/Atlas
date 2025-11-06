@@ -78,10 +78,11 @@ export const deleteQuestion = (id: string) =>
 export const generateQuestionsFromText = (assessmentId: string, content: string, numberOfQuestions: number) =>
   api.post(`/api/assessments/${assessmentId}/generate-from-text`, { content, numberOfQuestions });
 
-export const generateQuestionsFromFile = (assessmentId: string, file: File, numberOfQuestions: number) => {
+export const generateQuestionsFromFile = (assessmentId: string, file: File, numberOfQuestions: number, extractMode?: boolean) => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('numberOfQuestions', numberOfQuestions.toString());
+  formData.append('extractMode', (extractMode || false).toString());
   return api.post(`/api/assessments/${assessmentId}/generate-from-file`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });

@@ -812,6 +812,7 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
   const [file, setFile] = useState<File | null>(data.aiOptions?.file || null);
   const [numberOfQuestions, setNumberOfQuestions] = useState(data.aiOptions?.numberOfQuestions || 10);
   const [difficulty, setDifficulty] = useState(data.aiOptions?.difficulty || 'mixed');
+  const [extractMode, setExtractMode] = useState(data.aiOptions?.extractMode || false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -836,6 +837,7 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
         file,
         numberOfQuestions,
         difficulty,
+        extractMode,
       },
     });
     onNext();
@@ -948,6 +950,35 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
             <p className="mt-2 text-sm text-gray-500">
               Supported: PDF, DOCX, XLSX, PPTX, TXT, PNG, JPG, JPEG
             </p>
+
+            {/* Extraction Mode Checkbox - Only for documents */}
+            {file && (file.name.toLowerCase().endsWith('.pdf') ||
+                      file.name.toLowerCase().endsWith('.doc') ||
+                      file.name.toLowerCase().endsWith('.docx')) && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <label className="flex items-start space-x-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={extractMode}
+                    onChange={(e) => setExtractMode(e.target.checked)}
+                    className="mt-1 w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                  />
+                  <div className="flex-1">
+                    <div className="font-semibold text-gray-900 mb-1">
+                      📋 Extract questions directly from document
+                    </div>
+                    <p className="text-sm text-gray-700">
+                      <strong>Checked:</strong> Extract existing questions and answers from your document
+                      (if it already contains formatted questions)
+                    </p>
+                    <p className="text-sm text-gray-700 mt-1">
+                      <strong>Unchecked:</strong> AI will read the document and generate new questions
+                      from the content
+                    </p>
+                  </div>
+                </label>
+              </div>
+            )}
           </div>
         )}
 
@@ -971,14 +1002,14 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
         )}
 
         {/* Divider */}
-        {contentSource && (
+        {contentSource && !extractMode && (
           <div className="border-t border-gray-200 pt-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Generation Options</h3>
           </div>
         )}
 
-        {/* Number of Questions */}
-        {contentSource && (
+        {/* Number of Questions - Only show when not in extract mode */}
+        {contentSource && !extractMode && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Number of Questions: {numberOfQuestions}
@@ -999,8 +1030,8 @@ const Step4AIOptions: React.FC<StepProps> = ({ onNext, onPrevious, updateData, d
           </div>
         )}
 
-        {/* Difficulty Level */}
-        {contentSource && (
+        {/* Difficulty Level - Only show when not in extract mode */}
+        {contentSource && !extractMode && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty Level</label>
             <div className="grid grid-cols-4 gap-2">
@@ -1204,14 +1235,14 @@ const Step6Preview: React.FC<StepProps> = ({ onPrevious, onComplete, data }) => 
 
       // Step 2: Handle question generation based on strategy
       if (data.questionStrategy === 'ai' && data.aiOptions) {
-        const { contentSource, textContent, file, url, numberOfQuestions } = data.aiOptions;
+        const { contentSource, textContent, file, url, numberOfQuestions, extractMode } = data.aiOptions;
 
         if (contentSource === 'text' && textContent) {
           // Generate questions from text
           await api.generateQuestionsFromText(assessmentId, textContent, numberOfQuestions || 10);
         } else if (contentSource === 'file' && file) {
-          // Generate questions from uploaded file
-          await api.generateQuestionsFromFile(assessmentId, file, numberOfQuestions || 10);
+          // Generate questions from uploaded file or extract existing questions
+          await api.generateQuestionsFromFile(assessmentId, file, numberOfQuestions || 10, extractMode);
         } else if (contentSource === 'url' && url) {
           // Generate questions from URL
           await api.generateQuestionsFromUrl(assessmentId, url, numberOfQuestions || 10);

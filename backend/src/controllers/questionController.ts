@@ -140,6 +140,7 @@ export const uploadFileForQuestions = async (req: AuthRequest, res: Response) =>
 
     const fileName = req.file.originalname;
     const numberOfQuestions = parseInt(req.body.numberOfQuestions) || 10;
+    const extractMode = req.body.extractMode === 'true';
 
     // Check if file format is supported by Form Recognizer
     if (!isSupportedFormat(fileName)) {
@@ -162,6 +163,7 @@ export const uploadFileForQuestions = async (req: AuthRequest, res: Response) =>
           fileName,
           assessmentType: assessment.type,
           numberOfQuestions,
+          extractMode,
         });
 
         return res.status(202).json({ message: 'File processing started', jobId: job.id });
@@ -218,6 +220,7 @@ export const uploadFileForQuestions = async (req: AuthRequest, res: Response) =>
       fileName,
       assessmentType: assessment.type,
       numberOfQuestions,
+      extractMode,
     });
 
     res.status(202).json({

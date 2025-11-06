@@ -62,22 +62,78 @@ questionGenerationQueue.process(async (job) => {
   }
 });
 
+// Helper function to extract questions from document text
+function extractQuestionsFromText(text: string): any[] {
+  const questions: any[] = [];
+
+  // Split by question markers (Q1, Q2, etc. or 1., 2., etc.)
+  const questionRegex = /(?:^|\n)(?:Q\.?\s*)?(\d+)[\.\)]\s*(.+?)(?=(?:\n(?:Q\.?\s*)?\d+[\.\)]|\n(?:Answer|A)[:：]|$))/gis;
+  const matches = [...text.matchAll(questionRegex)];
+
+  matches.forEach((match, index) => {
+    const questionText = match[2].trim();
+
+    // Try to find answer for this question
+    const answerRegex = new RegExp(`(?:Answer|A)\\s*${match[1]}?[:：]\\s*(.+?)(?=\\n(?:Q\\.?\\s*)?\\d+[\\.\)]|\\n(?:Answer|A)|$)`, 'is');
+    const answerMatch = text.match(answerRegex);
+    const correctAnswer = answerMatch ? answerMatch[1].trim() : null;
+
+    // Try to extract options if present (A), B), C), etc.)
+    const optionsRegex = /[A-D][\.\)]\s*(.+?)(?=\n[A-D][\.\)]|\n(?:Answer|Q)|$)/gi;
+    const optionMatches = [...questionText.matchAll(optionsRegex)];
+    const options = optionMatches.map(m => m[1].trim());
+
+    // Determine question type
+    let questionType = 'short_answer';
+    if (options.length > 0) {
+      questionType = options.length > 1 ? 'single_choice' : 'short_answer';
+    } else if (questionText.toLowerCase().includes('true or false') ||
+               questionText.toLowerCase().includes('true/false')) {
+      questionType = 'true_false';
+    }
+
+    questions.push({
+      question_text: questionText.replace(optionsRegex, '').trim(),
+      question_type: questionType,
+      options: options.length > 0 ? options : null,
+      correct_answer: correctAnswer,
+      points: 1,
+    });
+  });
+
+  return questions;
+}
+
 // File processing worker
 fileProcessingQueue.process(async (job) => {
   console.log(`Processing file processing job: ${job.id}`);
 
   try {
-    const { jobId, assessmentId, fileContent, fileName, assessmentType, numberOfQuestions } = job.data;
+    const { jobId, assessmentId, fileContent, fileName, assessmentType, numberOfQuestions, extractMode } = job.data;
 
     // Update job status
     await JobModel.updateJobStatus(jobId, 'processing');
 
-    // Generate questions from file content
-    const generatedQuestions = await generateQuestionsFromContent(
-      fileContent,
-      assessmentType,
-      numberOfQuestions
-    );
+    let generatedQuestions;
+
+    if (extractMode) {
+      // Extract existing questions from the document
+      console.log(`Extracting questions from document: ${fileName}`);
+      generatedQuestions = extractQuestionsFromText(fileContent);
+
+      if (generatedQuestions.length === 0) {
+        throw new Error('No questions found in the document. Make sure your questions are numbered (1., 2., etc.) and answers are marked with "Answer:"');
+      }
+
+      console.log(`Extracted ${generatedQuestions.length} questions from ${fileName}`);
+    } else {
+      // Generate questions from file content using AI
+      generatedQuestions = await generateQuestionsFromContent(
+        fileContent,
+        assessmentType,
+        numberOfQuestions
+      );
+    }
 
     // Add questions to database
     const questionsToCreate = generatedQuestions.map((q, index) => ({
