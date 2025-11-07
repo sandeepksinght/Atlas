@@ -20,11 +20,24 @@ export const findOrganizationById = async (id: string): Promise<Organization | n
   return result.rows[0] || null;
 };
 
-export const findAllOrganizations = async (): Promise<Organization[]> => {
+export const findAllOrganizations = async (
+  limit: number = 50,
+  offset: number = 0
+): Promise<{ organizations: Organization[]; total: number }> => {
+  // Get total count
+  const countResult = await query('SELECT COUNT(*) as total FROM organizations');
+  const total = parseInt(countResult.rows[0].total);
+
+  // Get paginated organizations
   const result = await query(
-    `SELECT * FROM organizations ORDER BY created_at DESC`
+    `SELECT * FROM organizations ORDER BY created_at DESC LIMIT $1 OFFSET $2`,
+    [limit, offset]
   );
-  return result.rows;
+
+  return {
+    organizations: result.rows,
+    total,
+  };
 };
 
 export const updateOrganization = async (
@@ -56,32 +69,52 @@ export const updateOrganization = async (
 
 export const updateSubscriptionStatus = async (
   id: string,
-  status: SubscriptionStatus
+  status: SubscriptionStatus,
+  licenseCount?: number,
+  endDate?: Date
 ): Promise<Organization | null> => {
+  const updates: string[] = ['subscription_status = $1'];
+  const params: any[] = [status];
+  let paramIndex = 2;
+
+  if (licenseCount !== undefined) {
+    updates.push(`license_count = $${paramIndex}`);
+    params.push(licenseCount);
+    paramIndex++;
+  }
+
+  if (endDate !== undefined) {
+    updates.push(`subscription_end_date = $${paramIndex}`);
+    params.push(endDate);
+    paramIndex++;
+  }
+
+  params.push(id);
+
   const result = await query(
-    `UPDATE organizations SET subscription_status = $1, updated_at = NOW()
-     WHERE id = $2 RETURNING *`,
-    [status, id]
+    `UPDATE organizations SET ${updates.join(', ')}, updated_at = NOW()
+     WHERE id = $${paramIndex} RETURNING *`,
+    params
   );
   return result.rows[0] || null;
 };
 
-export const deactivateOrganization = async (id: string): Promise<boolean> => {
+export const deactivateOrganization = async (id: string): Promise<Organization | null> => {
   const result = await query(
     `UPDATE organizations SET is_active = false, updated_at = NOW()
-     WHERE id = $1`,
+     WHERE id = $1 RETURNING *`,
     [id]
   );
-  return (result.rowCount ?? 0) > 0;
+  return result.rows[0] || null;
 };
 
-export const activateOrganization = async (id: string): Promise<boolean> => {
+export const activateOrganization = async (id: string): Promise<Organization | null> => {
   const result = await query(
     `UPDATE organizations SET is_active = true, updated_at = NOW()
-     WHERE id = $1`,
+     WHERE id = $1 RETURNING *`,
     [id]
   );
-  return (result.rowCount ?? 0) > 0;
+  return result.rows[0] || null;
 };
 
 export const getOrganizationStats = async (orgId: string) => {
