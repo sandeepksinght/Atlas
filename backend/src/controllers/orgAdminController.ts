@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import { query } from '../config/database';
 import { AuthRequest } from '../middleware/auth';
 import * as UserModel from '../models/User';
 import * as OrganizationModel from '../models/Organization';
