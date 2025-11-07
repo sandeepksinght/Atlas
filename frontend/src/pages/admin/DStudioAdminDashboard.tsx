@@ -80,7 +80,8 @@ const DStudioAdminDashboard: React.FC = () => {
       });
       loadData();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to create organization');
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to create organization';
+      toast.error(errorMessage);
     }
   };
 

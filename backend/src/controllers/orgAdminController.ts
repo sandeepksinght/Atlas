@@ -80,7 +80,10 @@ export const createTeamMember = async (req: AuthRequest, res: Response) => {
     // Check if user already exists
     const existingUser = await UserModel.findUserByEmail(email);
     if (existingUser) {
-      return res.status(400).json({ error: 'User with this email already exists' });
+      return res.status(400).json({
+        error: 'Email already in use',
+        message: 'This email is already registered. Please use a different email.',
+      });
     }
 
     // Check license availability
@@ -133,7 +136,22 @@ export const createTeamMember = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     console.error('Create team member error:', error);
-    res.status(500).json({ error: 'Failed to create team member' });
+
+    // Handle specific database errors
+    if (error.code === '23505') {
+      // Unique constraint violation
+      if (error.constraint === 'users_email_key') {
+        return res.status(400).json({
+          error: 'Email already in use',
+          message: 'This email is already registered. Please use a different email.',
+        });
+      }
+    }
+
+    res.status(500).json({
+      error: 'Failed to create team member',
+      message: error.message || 'An unexpected error occurred',
+    });
   }
 };
 

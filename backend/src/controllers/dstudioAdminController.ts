@@ -17,6 +17,15 @@ export const createOrganization = async (req: AuthRequest, res: Response) => {
       });
     }
 
+    // Check if admin email already exists
+    const existingUser = await UserModel.findUserByEmail(adminEmail);
+    if (existingUser) {
+      return res.status(400).json({
+        error: 'Email already in use',
+        message: `The email ${adminEmail} is already registered. Please use a different email for the organization admin.`,
+      });
+    }
+
     // Create organization
     const organization = await OrganizationModel.createOrganization(
       name,
@@ -65,7 +74,22 @@ export const createOrganization = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     console.error('Create organization error:', error);
-    res.status(500).json({ error: 'Failed to create organization' });
+
+    // Handle specific database errors
+    if (error.code === '23505') {
+      // Unique constraint violation
+      if (error.constraint === 'users_email_key') {
+        return res.status(400).json({
+          error: 'Email already in use',
+          message: 'The admin email is already registered. Please use a different email.',
+        });
+      }
+    }
+
+    res.status(500).json({
+      error: 'Failed to create organization',
+      message: error.message || 'An unexpected error occurred',
+    });
   }
 };
 

@@ -87,7 +87,8 @@ const TeamManagement: React.FC = () => {
       setNewMember({ email: '', fullName: '', role: 'org_member' });
       loadTeamMembers();
     } catch (error: any) {
-      toast.error(error.response?.data?.error || 'Failed to create team member');
+      const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Failed to create team member';
+      toast.error(errorMessage);
       console.error(error);
     }
   };
