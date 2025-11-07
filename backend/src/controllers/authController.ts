@@ -64,8 +64,8 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Check if user is active
-    if (!user.is_active) {
+    // Check if user is active (handle null as active for backward compatibility)
+    if (user.is_active === false) {
       return res.status(401).json({
         error: 'Account disabled',
         message: 'Your account has been disabled. Please contact your administrator.',
