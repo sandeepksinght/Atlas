@@ -134,6 +134,10 @@ CREATE TABLE IF NOT EXISTS backups (
     status VARCHAR(50) DEFAULT 'completed', -- 'in_progress', 'completed', 'failed'
     error_message TEXT,
 
+    -- Restore tracking
+    restored_at TIMESTAMP,
+    restored_by UUID REFERENCES users(id) ON DELETE SET NULL,
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP
 );
@@ -152,7 +156,8 @@ CREATE TABLE IF NOT EXISTS impersonation_sessions (
     admin_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     target_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 
-    session_token VARCHAR(255) UNIQUE NOT NULL,
+    reason TEXT,
+    session_token VARCHAR(255) UNIQUE DEFAULT gen_random_uuid()::TEXT,
     ip_address INET,
     user_agent TEXT,
 

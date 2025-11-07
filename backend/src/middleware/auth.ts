@@ -178,7 +178,7 @@ export const handleImpersonation = async (req: AuthRequest, res: Response, next:
       }
 
       // Add impersonation context
-      req.user.impersonatedBy = activeSession.admin_id;
+      req.user.impersonatedBy = activeSession.admin_user_id;
       req.user.impersonationSessionId = activeSession.id;
 
       // Update user to be the target user

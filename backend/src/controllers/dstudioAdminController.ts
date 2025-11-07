@@ -261,7 +261,7 @@ export const getSystemStatistics = async (req: AuthRequest, res: Response) => {
 
     res.json({
       totalOrganizations: organizations.total,
-      activeOrganizations: organizations.organizations.filter(o => o.is_active).length,
+      activeOrganizations: organizations.organizations.filter((o: any) => o.is_active).length,
       totalUsers,
       totalAssessments,
       totalResponses,

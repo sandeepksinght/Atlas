@@ -77,6 +77,8 @@ export interface Backup {
   includes_users: boolean;
   status: string;
   error_message: string | null;
+  restored_at: Date | null;
+  restored_by: string | null;
   created_at: Date;
   expires_at: Date | null;
 }
@@ -86,6 +88,7 @@ export interface ImpersonationSession {
   organization_id: string;
   admin_user_id: string;
   target_user_id: string;
+  reason: string | null;
   session_token: string;
   ip_address: string | null;
   user_agent: string | null;

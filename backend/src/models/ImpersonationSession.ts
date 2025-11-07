@@ -42,7 +42,7 @@ export const startImpersonation = async (
   // Check if there's already an active session
   const existingSession = await query(
     `SELECT * FROM impersonation_sessions
-     WHERE admin_id = $1 AND target_user_id = $2 AND ended_at IS NULL`,
+     WHERE admin_user_id = $1 AND target_user_id = $2 AND ended_at IS NULL`,
     [adminId, targetUserId]
   );
 
@@ -53,7 +53,7 @@ export const startImpersonation = async (
   // Create new session
   const result = await query(
     `INSERT INTO impersonation_sessions (
-      organization_id, admin_id, target_user_id, reason
+      organization_id, admin_user_id, target_user_id, reason
     )
     VALUES ($1, $2, $3, $4)
     RETURNING *`,
@@ -93,7 +93,7 @@ export const endAllAdminSessions = async (
   const result = await query(
     `UPDATE impersonation_sessions
      SET ended_at = NOW()
-     WHERE admin_id = $1 AND ended_at IS NULL`,
+     WHERE admin_user_id = $1 AND ended_at IS NULL`,
     [adminId]
   );
 
@@ -112,7 +112,7 @@ export const getActiveSession = async (
             u.full_name as target_name
      FROM impersonation_sessions s
      LEFT JOIN users u ON s.target_user_id = u.id
-     WHERE s.admin_id = $1 AND s.ended_at IS NULL
+     WHERE s.admin_user_id = $1 AND s.ended_at IS NULL
      ORDER BY s.started_at DESC
      LIMIT 1`,
     [adminId]
@@ -134,7 +134,7 @@ export const getActiveOrganizationSessions = async (
             target.email as target_email,
             target.full_name as target_name
      FROM impersonation_sessions s
-     LEFT JOIN users admin ON s.admin_id = admin.id
+     LEFT JOIN users admin ON s.admin_user_id = admin.id
      LEFT JOIN users target ON s.target_user_id = target.id
      WHERE s.organization_id = $1 AND s.ended_at IS NULL
      ORDER BY s.started_at DESC`,
@@ -168,7 +168,7 @@ export const getSessionHistory = async (
             target.full_name as target_name,
             EXTRACT(EPOCH FROM (COALESCE(s.ended_at, NOW()) - s.started_at)) as duration_seconds
      FROM impersonation_sessions s
-     LEFT JOIN users admin ON s.admin_id = admin.id
+     LEFT JOIN users admin ON s.admin_user_id = admin.id
      LEFT JOIN users target ON s.target_user_id = target.id
      WHERE s.organization_id = $1
      ORDER BY s.started_at DESC
@@ -195,7 +195,7 @@ export const getUserImpersonationHistory = async (
             admin.full_name as admin_name,
             EXTRACT(EPOCH FROM (COALESCE(s.ended_at, NOW()) - s.started_at)) as duration_seconds
      FROM impersonation_sessions s
-     LEFT JOIN users admin ON s.admin_id = admin.id
+     LEFT JOIN users admin ON s.admin_user_id = admin.id
      WHERE s.target_user_id = $1
      ORDER BY s.started_at DESC
      LIMIT $2`,
@@ -219,7 +219,7 @@ export const getAdminImpersonationHistory = async (
             EXTRACT(EPOCH FROM (COALESCE(s.ended_at, NOW()) - s.started_at)) as duration_seconds
      FROM impersonation_sessions s
      LEFT JOIN users target ON s.target_user_id = target.id
-     WHERE s.admin_id = $1
+     WHERE s.admin_user_id = $1
      ORDER BY s.started_at DESC
      LIMIT $2`,
     [adminId, limit]
@@ -269,7 +269,7 @@ export const getImpersonationStatistics = async (
     `SELECT
        COUNT(*) as total_sessions,
        COUNT(CASE WHEN ended_at IS NULL THEN 1 END) as active_sessions,
-       COUNT(DISTINCT admin_id) as unique_admins,
+       COUNT(DISTINCT admin_user_id) as unique_admins,
        COUNT(DISTINCT target_user_id) as unique_targets,
        AVG(EXTRACT(EPOCH FROM (COALESCE(ended_at, NOW()) - started_at))) as avg_duration
      FROM impersonation_sessions

@@ -2,7 +2,13 @@ export interface User {
   id: string;
   email: string;
   password_hash: string;
-  name: string;
+  name?: string; // Legacy field
+  full_name?: string; // Enterprise field
+  phone?: string;
+  organization_id?: string | null;
+  role?: string; // 'dstudio_admin' | 'org_admin' | 'org_member'
+  is_active?: boolean;
+  created_by?: string | null;
   created_at: Date;
   updated_at: Date;
 }

@@ -69,7 +69,7 @@ export const createBackup = async (
 
   // Create backup record
   const result = await query(
-    `INSERT INTO backups (organization_id, created_by, backup_data, backup_size, description)
+    `INSERT INTO backups (organization_id, created_by, data, data_size, description)
      VALUES ($1, $2, $3, $4, $5)
      RETURNING *`,
     [organizationId, createdBy, backupData, backupSize, description]
@@ -96,7 +96,7 @@ export const restoreBackup = async (
   }
 
   const backup: Backup = backupResult.rows[0];
-  const backupData = backup.backup_data;
+  const backupData = backup.data;
   const organizationId = backup.organization_id;
 
   try {

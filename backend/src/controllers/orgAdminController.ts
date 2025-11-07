@@ -414,7 +414,7 @@ export const createBackup = async (req: AuthRequest, res: Response) => {
       message: 'Backup created successfully',
       backup: {
         id: backup.id,
-        backup_size: backup.backup_size,
+        data_size: backup.data_size,
         description: backup.description,
         created_at: backup.created_at,
       },
