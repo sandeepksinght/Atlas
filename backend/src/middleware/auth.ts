@@ -210,9 +210,57 @@ export const authenticateWithImpersonation = [authenticate, handleImpersonation]
 export const requireDStudioAdmin = requireRole('dstudio_admin');
 
 /**
- * Organization Admin or higher middleware
+ * Organization context middleware with DStudio admin override
+ * Allows DStudio admins to provide organizationId via query params
  */
-export const requireOrgAdmin = requireRole('org_admin', 'dstudio_admin');
+export const requireOrgContext = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Not authenticated' });
+  }
+
+  const userRole = req.user.role;
+
+  // For org admins and members, use their organizationId
+  if (userRole === 'org_admin' || userRole === 'org_member') {
+    if (!req.user.organizationId) {
+      return res.status(403).json({
+        error: 'Access denied',
+        message: 'Organization context required',
+      });
+    }
+    return next();
+  }
+
+  // For dStudio admins, allow explicit organizationId in query or body
+  if (userRole === 'dstudio_admin') {
+    const contextOrgId = req.query.organizationId || req.body.organizationId;
+
+    if (contextOrgId) {
+      // Override the user's organizationId with the context organizationId
+      req.user.organizationId = contextOrgId as string;
+      return next();
+    } else {
+      return res.status(400).json({
+        error: 'Organization context required',
+        message: 'Please provide organizationId parameter or select an organization',
+      });
+    }
+  }
+
+  // Other roles are not allowed
+  return res.status(403).json({
+    error: 'Access denied',
+    message: 'Insufficient permissions',
+  });
+};
+
+/**
+ * Organization Admin or higher middleware (with context support)
+ */
+export const requireOrgAdmin = [
+  requireRole('org_admin', 'dstudio_admin'),
+  requireOrgContext,
+];
 
 /**
  * Any authenticated user with organization context

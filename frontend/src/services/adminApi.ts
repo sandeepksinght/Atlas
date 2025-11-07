@@ -56,13 +56,14 @@ export const getSystemStatistics = () => api.get('/api/admin/system/statistics')
 /**
  * Get organization dashboard
  */
-export const getOrgDashboard = () => api.get('/api/admin/dashboard');
+export const getOrgDashboard = (organizationId?: string) =>
+  api.get('/api/admin/dashboard', { params: { organizationId } });
 
 /**
  * Get team members
  */
-export const getTeamMembers = (includeInactive = false) =>
-  api.get('/api/admin/team', { params: { includeInactive } });
+export const getTeamMembers = (includeInactive = false, organizationId?: string) =>
+  api.get('/api/admin/team', { params: { includeInactive, organizationId } });
 
 /**
  * Create team member
@@ -123,8 +124,8 @@ export const createBackup = (description?: string) =>
 /**
  * Get backups
  */
-export const getBackups = (page = 1, limit = 20) =>
-  api.get('/api/admin/backups', { params: { page, limit } });
+export const getBackups = (page = 1, limit = 20, organizationId?: string) =>
+  api.get('/api/admin/backups', { params: { page, limit, organizationId } });
 
 /**
  * Restore backup
@@ -141,10 +142,11 @@ export const getAuditLogs = (filters?: {
   userId?: string;
   action?: string;
   resourceType?: string;
+  organizationId?: string;
 }) => api.get('/api/admin/audit-logs', { params: filters });
 
 /**
  * Get organization reports
  */
-export const getReports = (dateRange?: number) =>
-  api.get('/api/admin/reports', { params: { dateRange } });
+export const getReports = (dateRange?: number, organizationId?: string) =>
+  api.get('/api/admin/reports', { params: { dateRange, organizationId } });

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as adminApi from '../../services/adminApi';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import { useOrganization } from '../../context/OrganizationContext';
 
 interface TeamMember {
   id: string;
@@ -23,6 +24,7 @@ interface TemporaryPassword {
 }
 
 const TeamManagement: React.FC = () => {
+  const { selectedOrganization, canSwitchContext } = useOrganization();
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -47,12 +49,21 @@ const TeamManagement: React.FC = () => {
 
   useEffect(() => {
     loadTeamMembers();
-  }, [includeInactive]);
+  }, [includeInactive, selectedOrganization]);
 
   const loadTeamMembers = async () => {
+    // Don't load if DStudio admin without org selected
+    if (canSwitchContext && !selectedOrganization) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await adminApi.getTeamMembers(includeInactive);
+      const response = await adminApi.getTeamMembers(
+        includeInactive,
+        selectedOrganization?.id
+      );
       setMembers(response.data.members);
     } catch (error: any) {
       toast.error('Failed to load team members');
@@ -190,6 +201,31 @@ const TeamManagement: React.FC = () => {
     });
     setShowEditModal(true);
   };
+
+  // Show message for DStudio admins without org context
+  if (canSwitchContext && !selectedOrganization) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AdminSidebar />
+        <div className="ml-64 flex items-center justify-center h-screen">
+          <div className="text-center max-w-md">
+            <div className="text-6xl mb-4">🏢</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Select an Organization
+            </h2>
+            <p className="text-gray-600 mb-6">
+              To manage team members, please select an organization from the dropdown in the sidebar.
+            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+              <p className="text-sm text-blue-800">
+                <strong>Tip:</strong> Use the "Current Context" dropdown at the top of the sidebar to select which organization you want to manage.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { OrganizationProvider } from './context/OrganizationContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -58,8 +59,9 @@ const AuthenticatedLayout: React.FC<{ children: React.ReactNode; sidebarCollapse
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <Router>
-        <div className="min-h-screen bg-gray-50">
+      <OrganizationProvider>
+        <Router>
+          <div className="min-h-screen bg-gray-50">
           <Routes>
             {/* Public route for taking assessments - no navbar, no sidebar */}
             <Route path="/take/:token" element={<TakeAssessment />} />
@@ -288,8 +290,9 @@ const App: React.FC = () => {
             draggable
             pauseOnHover
           />
-        </div>
-      </Router>
+          </div>
+        </Router>
+      </OrganizationProvider>
     </AuthProvider>
   );
 };
