@@ -57,7 +57,7 @@ export const createTemporaryPassword = async (
 
   // Store temporary password record
   await query(
-    `INSERT INTO temporary_passwords (user_id, password, created_by)
+    `INSERT INTO temporary_passwords (user_id, password_plain, created_by)
      VALUES ($1, $2, $3)`,
     [userId, plainPassword, createdBy]
   );
@@ -73,7 +73,9 @@ export const createTemporaryPassword = async (
  */
 export const getTemporaryPasswords = async (userId: string, limit: number = 5) => {
   const result = await query(
-    `SELECT tp.*, u.email as created_by_email
+    `SELECT tp.id, tp.user_id, tp.password_plain as password, tp.created_by,
+            tp.must_change_password, tp.expires_at, tp.used_at, tp.created_at,
+            u.email as created_by_email
      FROM temporary_passwords tp
      LEFT JOIN users u ON tp.created_by = u.id
      WHERE tp.user_id = $1
