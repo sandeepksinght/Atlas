@@ -69,6 +69,10 @@ CREATE TABLE IF NOT EXISTS organizations (
 -- 3. UPDATE USERS TABLE
 -- =====================================================
 
+-- Update users table for enterprise
+-- Make name nullable (legacy field, enterprise users use full_name)
+ALTER TABLE users ALTER COLUMN name DROP NOT NULL;
+
 -- Add new columns to users table
 ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(255);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(50);

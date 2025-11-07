@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(255),  -- Legacy field, nullable for enterprise users
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -372,6 +372,10 @@ CREATE TABLE IF NOT EXISTS organizations (
 -- =====================================================
 -- 3. UPDATE USERS TABLE
 -- =====================================================
+
+-- Update users table for enterprise
+-- Make name nullable (legacy field, enterprise users use full_name)
+ALTER TABLE users ALTER COLUMN name DROP NOT NULL;
 
 -- Add new columns to users table
 ALTER TABLE users ADD COLUMN IF NOT EXISTS full_name VARCHAR(255);
