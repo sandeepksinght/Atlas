@@ -42,13 +42,14 @@ CREATE TABLE IF NOT EXISTS webhook_deliveries (
     response_body TEXT,
     error_message TEXT,
     attempts INTEGER DEFAULT 1,
-    delivered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    INDEX idx_webhook_deliveries_webhook (webhook_id),
-    INDEX idx_webhook_deliveries_event (event_type),
-    INDEX idx_webhook_deliveries_status (response_status_code),
-    INDEX idx_webhook_deliveries_delivered (delivered_at)
+    delivered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Indexes for webhook_deliveries
+CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_webhook ON webhook_deliveries(webhook_id);
+CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_event ON webhook_deliveries(event_type);
+CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_status ON webhook_deliveries(response_status_code);
+CREATE INDEX IF NOT EXISTS idx_webhook_deliveries_delivered ON webhook_deliveries(delivered_at);
 
 -- Webhook statistics view
 CREATE OR REPLACE VIEW webhook_statistics AS
