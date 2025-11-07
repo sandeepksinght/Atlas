@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as dstudioAdminController from '../controllers/dstudioAdminController';
 import * as orgAdminController from '../controllers/orgAdminController';
+import * as webhookController from '../controllers/webhookController';
 import { authenticate, requireDStudioAdmin, requireOrgAdmin, requirePermission } from '../middleware/auth';
 
 const router = Router();
@@ -48,5 +49,17 @@ router.get('/audit-logs', authenticate, requireOrgAdmin, orgAdminController.getA
 
 // Reports
 router.get('/reports', authenticate, requireOrgAdmin, requirePermission('view_reports'), orgAdminController.getReports);
+
+// Webhooks
+router.get('/webhooks', authenticate, requireOrgAdmin, webhookController.getWebhooks);
+router.get('/webhooks/statistics', authenticate, requireOrgAdmin, webhookController.getWebhookStats);
+router.get('/webhooks/:webhookId', authenticate, requireOrgAdmin, webhookController.getWebhook);
+router.post('/webhooks', authenticate, requireOrgAdmin, webhookController.createWebhook);
+router.put('/webhooks/:webhookId', authenticate, requireOrgAdmin, webhookController.updateWebhook);
+router.delete('/webhooks/:webhookId', authenticate, requireOrgAdmin, webhookController.deleteWebhook);
+router.post('/webhooks/:webhookId/regenerate-secret', authenticate, requireOrgAdmin, webhookController.regenerateSecret);
+router.get('/webhooks/:webhookId/deliveries', authenticate, requireOrgAdmin, webhookController.getWebhookDeliveries);
+router.post('/webhooks/:webhookId/test', authenticate, requireOrgAdmin, webhookController.testWebhook);
+router.post('/webhooks/deliveries/:deliveryId/retry', authenticate, requireOrgAdmin, webhookController.retryDelivery);
 
 export default router;

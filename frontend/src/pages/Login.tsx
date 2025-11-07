@@ -15,9 +15,28 @@ const Login: React.FC = () => {
     setLoading(true);
 
     try {
-      await login(email, password);
+      const response = await login(email, password);
       toast.success('Login successful!');
-      navigate('/dashboard');
+
+      // Get user data from login response via AuthContext
+      // The login function in AuthContext sets the user state
+      // We need to check the role from localStorage or make an API call
+      const token = localStorage.getItem('token');
+      if (token) {
+        // Decode JWT to get role (simple decode, not verification)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+
+        // Redirect based on role
+        if (payload.role === 'dstudio_admin') {
+          navigate('/admin/dstudio-dashboard');
+        } else if (payload.role === 'org_admin') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error: any) {
       toast.error(error.response?.data?.error || 'Login failed');
     } finally {

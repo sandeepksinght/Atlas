@@ -2,6 +2,9 @@ export interface User {
   id: string;
   email: string;
   name: string;
+  role?: string;
+  organization_id?: string;
+  full_name?: string;
 }
 
 export type AssessmentType = 'survey' | 'quiz' | 'poll' | 'assessment';

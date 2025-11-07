@@ -35,6 +35,14 @@ import About from './pages/About';
 import Privacy from './pages/Privacy';
 import Terms from './pages/Terms';
 
+// Admin pages
+import DStudioAdminDashboard from './pages/admin/DStudioAdminDashboard';
+import OrgAdminDashboard from './pages/admin/OrgAdminDashboard';
+import TeamManagement from './pages/admin/TeamManagement';
+import BackupManagement from './pages/admin/BackupManagement';
+import AuditLogs from './pages/admin/AuditLogs';
+import Reports from './pages/admin/Reports';
+
 // Layout wrapper with sidebar for authenticated routes
 const AuthenticatedLayout: React.FC<{ children: React.ReactNode; sidebarCollapsed?: boolean }> = ({ children, sidebarCollapsed }) => {
   return (
@@ -209,6 +217,61 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <HostGame />
+                </ProtectedRoute>
+              }
+            />
+
+            {/* Admin Routes - No sidebar, they have their own layout */}
+            <Route
+              path="/admin/dstudio-dashboard"
+              element={
+                <ProtectedRoute>
+                  <DStudioAdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/dashboard"
+              element={
+                <ProtectedRoute>
+                  <OrgAdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/team"
+              element={
+                <ProtectedRoute>
+                  <TeamManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/backups"
+              element={
+                <ProtectedRoute>
+                  <BackupManagement />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/audit-logs"
+              element={
+                <ProtectedRoute>
+                  <AuditLogs />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/reports"
+              element={
+                <ProtectedRoute>
+                  <Reports />
                 </ProtectedRoute>
               }
             />

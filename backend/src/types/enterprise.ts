@@ -155,3 +155,58 @@ export interface UserActivitySummary {
   total_activities: number;
   last_activity: Date | null;
 }
+export interface SystemSettings {
+  setting_key: string;
+  setting_value: Record<string, any>;
+  updated_at: Date;
+}
+
+// Webhooks
+export type WebhookEvent =
+  | 'assessment.created'
+  | 'assessment.updated'
+  | 'assessment.deleted'
+  | 'assessment.published'
+  | 'response.submitted'
+  | 'user.created'
+  | 'user.updated'
+  | 'user.deleted'
+  | 'backup.created'
+  | 'backup.restored';
+
+export interface Webhook {
+  id: string;
+  organization_id: string;
+  url: string;
+  event_types: WebhookEvent[];
+  secret: string | null;
+  is_active: boolean;
+  created_by: string | null;
+  created_at: Date;
+  updated_at: Date;
+  last_triggered_at: Date | null;
+}
+
+export interface WebhookDelivery {
+  id: string;
+  webhook_id: string;
+  event_type: WebhookEvent;
+  payload: Record<string, any>;
+  response_status_code: number | null;
+  response_body: string | null;
+  error_message: string | null;
+  attempts: number;
+  delivered_at: Date;
+}
+
+export interface WebhookStatistics {
+  webhook_id: string;
+  organization_id: string;
+  url: string;
+  is_active: boolean;
+  total_deliveries: number;
+  successful_deliveries: number;
+  failed_deliveries: number;
+  last_delivery_at: Date | null;
+  success_rate: number;
+}
