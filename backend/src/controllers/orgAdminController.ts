@@ -1,0 +1,558 @@
+import { Response } from 'express';
+import { AuthRequest } from '../middleware/auth';
+import * as UserModel from '../models/User';
+import * as OrganizationModel from '../models/Organization';
+import * as AuditLogModel from '../models/AuditLog';
+import * as BackupModel from '../models/Backup';
+import * as ImpersonationModel from '../models/ImpersonationSession';
+
+/**
+ * Get organization dashboard data
+ */
+export const getDashboard = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+
+    const organization = await OrganizationModel.findOrganizationById(organizationId);
+    const stats = await OrganizationModel.getOrganizationStats(organizationId);
+    const users = await UserModel.findUsersByOrganization(organizationId);
+    const recentLogs = await AuditLogModel.getRecentAuditLogs(organizationId, 10);
+
+    res.json({
+      organization,
+      stats,
+      users: users.map(u => ({
+        id: u.id,
+        email: u.email,
+        full_name: u.full_name,
+        role: u.role,
+        is_active: u.is_active,
+        created_at: u.created_at,
+      })),
+      recentActivity: recentLogs,
+    });
+  } catch (error: any) {
+    console.error('Get dashboard error:', error);
+    res.status(500).json({ error: 'Failed to fetch dashboard data' });
+  }
+};
+
+/**
+ * Get all team members
+ */
+export const getTeamMembers = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+    const includeInactive = req.query.includeInactive === 'true';
+
+    const users = await UserModel.findUsersByOrganization(organizationId, includeInactive);
+
+    res.json({
+      users: users.map(u => ({
+        id: u.id,
+        email: u.email,
+        full_name: u.full_name,
+        role: u.role,
+        is_active: u.is_active,
+        phone: u.phone,
+        created_at: u.created_at,
+        updated_at: u.updated_at,
+      })),
+    });
+  } catch (error: any) {
+    console.error('Get team members error:', error);
+    res.status(500).json({ error: 'Failed to fetch team members' });
+  }
+};
+
+/**
+ * Create a new team member
+ */
+export const createTeamMember = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+    const { email, fullName, role } = req.body;
+
+    if (!email || !fullName) {
+      return res.status(400).json({ error: 'Email and full name are required' });
+    }
+
+    // Check if user already exists
+    const existingUser = await UserModel.findUserByEmail(email);
+    if (existingUser) {
+      return res.status(400).json({ error: 'User with this email already exists' });
+    }
+
+    // Check license availability
+    const organization = await OrganizationModel.findOrganizationById(organizationId);
+    if (!organization) {
+      return res.status(404).json({ error: 'Organization not found' });
+    }
+
+    if (organization.used_licenses >= organization.license_count) {
+      return res.status(400).json({ error: 'No available licenses. Please contact administrator.' });
+    }
+
+    // Create user with temporary password
+    const tempPassword = await UserModel.createEnterpriseUser(
+      email,
+      'changeme123', // Will be replaced with temporary password
+      fullName,
+      organizationId,
+      role || 'org_member',
+      req.user!.userId
+    );
+
+    // Generate temporary password
+    const { plainPassword } = await UserModel.createTemporaryPassword(
+      tempPassword.id,
+      req.user!.userId
+    );
+
+    // Log the action
+    await AuditLogModel.createAuditLog(
+      organizationId,
+      req.user!.userId,
+      'user_created',
+      'user',
+      tempPassword.id,
+      { email, fullName, role },
+      req.ip,
+      req.get('user-agent')
+    );
+
+    res.status(201).json({
+      message: 'Team member created successfully',
+      user: {
+        id: tempPassword.id,
+        email: tempPassword.email,
+        full_name: tempPassword.full_name,
+        role: tempPassword.role,
+        temporaryPassword: plainPassword,
+      },
+    });
+  } catch (error: any) {
+    console.error('Create team member error:', error);
+    res.status(500).json({ error: 'Failed to create team member' });
+  }
+};
+
+/**
+ * Update team member
+ */
+export const updateTeamMember = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+    const { userId } = req.params;
+    const { full_name, email, phone, role } = req.body;
+
+    // Verify user belongs to same organization
+    const user = await UserModel.findUserById(userId);
+    if (!user || user.organization_id !== organizationId) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Update profile fields
+    const updates: any = {};
+    if (full_name !== undefined) updates.full_name = full_name;
+    if (email !== undefined) updates.email = email;
+    if (phone !== undefined) updates.phone = phone;
+
+    let updatedUser = user;
+    if (Object.keys(updates).length > 0) {
+      updatedUser = await UserModel.updateUserProfile(userId, updates);
+    }
+
+    // Update role if provided
+    if (role !== undefined && role !== user.role) {
+      updatedUser = await UserModel.updateUserRole(userId, role);
+    }
+
+    // Log the action
+    await AuditLogModel.createAuditLog(
+      organizationId,
+      req.user!.userId,
+      'user_updated',
+      'user',
+      userId,
+      { updates, role },
+      req.ip,
+      req.get('user-agent')
+    );
+
+    res.json({
+      message: 'Team member updated successfully',
+      user: updatedUser,
+    });
+  } catch (error: any) {
+    console.error('Update team member error:', error);
+    res.status(500).json({ error: 'Failed to update team member' });
+  }
+};
+
+/**
+ * Reset user password (admin only)
+ */
+export const resetUserPassword = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+    const { userId } = req.params;
+
+    // Verify user belongs to same organization
+    const user = await UserModel.findUserById(userId);
+    if (!user || user.organization_id !== organizationId) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Generate new temporary password
+    const { plainPassword } = await UserModel.createTemporaryPassword(
+      userId,
+      req.user!.userId
+    );
+
+    // Log the action
+    await AuditLogModel.createAuditLog(
+      organizationId,
+      req.user!.userId,
+      'password_reset',
+      'user',
+      userId,
+      { targetUser: user.email },
+      req.ip,
+      req.get('user-agent')
+    );
+
+    res.json({
+      message: 'Password reset successfully',
+      temporaryPassword: plainPassword,
+    });
+  } catch (error: any) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+};
+
+/**
+ * Get temporary passwords for a user (admin only)
+ */
+export const getUserPasswords = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+    const { userId } = req.params;
+
+    // Verify user belongs to same organization
+    const user = await UserModel.findUserById(userId);
+    if (!user || user.organization_id !== organizationId) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const passwords = await UserModel.getTemporaryPasswords(userId, 5);
+
+    res.json({ passwords });
+  } catch (error: any) {
+    console.error('Get user passwords error:', error);
+    res.status(500).json({ error: 'Failed to fetch passwords' });
+  }
+};
+
+/**
+ * Activate/deactivate team member
+ */
+export const toggleUserStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+    const { userId } = req.params;
+    const { isActive } = req.body;
+
+    // Verify user belongs to same organization
+    const user = await UserModel.findUserById(userId);
+    if (!user || user.organization_id !== organizationId) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Cannot deactivate yourself
+    if (userId === req.user!.userId) {
+      return res.status(400).json({ error: 'Cannot deactivate your own account' });
+    }
+
+    const updatedUser = await UserModel.setUserActive(userId, isActive);
+
+    // Log the action
+    await AuditLogModel.createAuditLog(
+      organizationId,
+      req.user!.userId,
+      isActive ? 'user_enabled' : 'user_disabled',
+      'user',
+      userId,
+      { targetUser: user.email, isActive },
+      req.ip,
+      req.get('user-agent')
+    );
+
+    res.json({
+      message: `User ${isActive ? 'activated' : 'deactivated'} successfully`,
+      user: updatedUser,
+    });
+  } catch (error: any) {
+    console.error('Toggle user status error:', error);
+    res.status(500).json({ error: 'Failed to update user status' });
+  }
+};
+
+/**
+ * Start impersonating a team member
+ */
+export const startImpersonation = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+    const { userId } = req.params;
+    const { reason } = req.body;
+
+    // Verify permission
+    const canImpersonate = await ImpersonationModel.canImpersonate(req.user!.userId, userId);
+    if (!canImpersonate.allowed) {
+      return res.status(403).json({ error: canImpersonate.reason });
+    }
+
+    // Start impersonation
+    const session = await ImpersonationModel.startImpersonation(
+      organizationId,
+      req.user!.userId,
+      userId,
+      reason
+    );
+
+    // Log the action
+    await AuditLogModel.createAuditLog(
+      organizationId,
+      req.user!.userId,
+      'user_impersonated',
+      'user',
+      userId,
+      { reason },
+      req.ip,
+      req.get('user-agent'),
+      req.user!.userId
+    );
+
+    res.json({
+      message: 'Impersonation started',
+      session: {
+        id: session.id,
+        target_user_id: session.target_user_id,
+        started_at: session.started_at,
+      },
+    });
+  } catch (error: any) {
+    console.error('Start impersonation error:', error);
+    res.status(500).json({ error: error.message || 'Failed to start impersonation' });
+  }
+};
+
+/**
+ * End impersonation session
+ */
+export const endImpersonation = async (req: AuthRequest, res: Response) => {
+  try {
+    const { sessionId } = req.params;
+
+    const session = await ImpersonationModel.endImpersonation(sessionId);
+
+    res.json({
+      message: 'Impersonation ended',
+      session,
+    });
+  } catch (error: any) {
+    console.error('End impersonation error:', error);
+    res.status(500).json({ error: error.message || 'Failed to end impersonation' });
+  }
+};
+
+/**
+ * Get active impersonation sessions
+ */
+export const getActiveSessions = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+
+    const sessions = await ImpersonationModel.getActiveOrganizationSessions(organizationId);
+
+    res.json({ sessions });
+  } catch (error: any) {
+    console.error('Get active sessions error:', error);
+    res.status(500).json({ error: 'Failed to fetch active sessions' });
+  }
+};
+
+/**
+ * Create backup
+ */
+export const createBackup = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+    const { description } = req.body;
+
+    const backup = await BackupModel.createBackup(
+      organizationId,
+      req.user!.userId,
+      description
+    );
+
+    // Log the action
+    await AuditLogModel.createAuditLog(
+      organizationId,
+      req.user!.userId,
+      'backup_created',
+      'backup',
+      backup.id,
+      { description },
+      req.ip,
+      req.get('user-agent')
+    );
+
+    res.status(201).json({
+      message: 'Backup created successfully',
+      backup: {
+        id: backup.id,
+        backup_size: backup.backup_size,
+        description: backup.description,
+        created_at: backup.created_at,
+      },
+    });
+  } catch (error: any) {
+    console.error('Create backup error:', error);
+    res.status(500).json({ error: 'Failed to create backup' });
+  }
+};
+
+/**
+ * Get all backups
+ */
+export const getBackups = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const offset = (page - 1) * limit;
+
+    const result = await BackupModel.getOrganizationBackups(organizationId, limit, offset);
+
+    res.json({
+      backups: result.backups,
+      pagination: {
+        total: result.total,
+        page,
+        limit,
+        totalPages: Math.ceil(result.total / limit),
+      },
+    });
+  } catch (error: any) {
+    console.error('Get backups error:', error);
+    res.status(500).json({ error: 'Failed to fetch backups' });
+  }
+};
+
+/**
+ * Restore from backup
+ */
+export const restoreBackup = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+    const { backupId } = req.params;
+
+    // Verify backup belongs to organization
+    const backup = await BackupModel.getBackupById(backupId);
+    if (!backup || backup.organization_id !== organizationId) {
+      return res.status(404).json({ error: 'Backup not found' });
+    }
+
+    const result = await BackupModel.restoreBackup(backupId, req.user!.userId);
+
+    // Log the action
+    await AuditLogModel.createAuditLog(
+      organizationId,
+      req.user!.userId,
+      'backup_restored',
+      'backup',
+      backupId,
+      result.details,
+      req.ip,
+      req.get('user-agent')
+    );
+
+    res.json({
+      message: result.message,
+      details: result.details,
+    });
+  } catch (error: any) {
+    console.error('Restore backup error:', error);
+    res.status(500).json({ error: error.message || 'Failed to restore backup' });
+  }
+};
+
+/**
+ * Get audit logs
+ */
+export const getAuditLogs = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 50;
+    const offset = (page - 1) * limit;
+
+    const filters: any = {
+      limit,
+      offset,
+    };
+
+    if (req.query.userId) filters.userId = req.query.userId as string;
+    if (req.query.action) filters.action = req.query.action as string;
+    if (req.query.resourceType) filters.resourceType = req.query.resourceType as string;
+
+    const result = await AuditLogModel.getAuditLogs(organizationId, filters);
+
+    res.json({
+      logs: result.logs,
+      pagination: {
+        total: result.total,
+        page,
+        limit,
+        totalPages: Math.ceil(result.total / limit),
+      },
+    });
+  } catch (error: any) {
+    console.error('Get audit logs error:', error);
+    res.status(500).json({ error: 'Failed to fetch audit logs' });
+  }
+};
+
+/**
+ * Get organization reports/analytics
+ */
+export const getReports = async (req: AuthRequest, res: Response) => {
+  try {
+    const organizationId = req.user!.organizationId!;
+
+    const stats = await OrganizationModel.getOrganizationStats(organizationId);
+    const userStats = await UserModel.getUserStatistics(organizationId);
+
+    // Get activity stats for last 30 days
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const auditStats = await AuditLogModel.getAuditStatistics(
+      organizationId,
+      thirtyDaysAgo,
+      new Date()
+    );
+
+    res.json({
+      organization: stats,
+      users: userStats,
+      activity: auditStats,
+    });
+  } catch (error: any) {
+    console.error('Get reports error:', error);
+    res.status(500).json({ error: 'Failed to fetch reports' });
+  }
+};

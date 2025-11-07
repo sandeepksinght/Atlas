@@ -5,6 +5,15 @@ import { JWTPayload } from '../types';
 
 export const register = async (req: Request, res: Response) => {
   try {
+    // ENTERPRISE MODE: Public signup is disabled
+    // Users must be created by organization admins or dStudio admins
+    return res.status(403).json({
+      error: 'Public registration is disabled',
+      message: 'This is an enterprise application. Please contact your organization administrator for access.',
+    });
+
+    // Legacy code kept for reference (disabled)
+    /*
     const { email, password, name } = req.body;
 
     if (!email || !password || !name) {
@@ -34,6 +43,7 @@ export const register = async (req: Request, res: Response) => {
         name: user.name,
       },
     });
+    */
   } catch (error: any) {
     console.error('Register error:', error);
     res.status(500).json({ error: 'Failed to register user' });
@@ -54,14 +64,31 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    // Check if user is active
+    if (!user.is_active) {
+      return res.status(401).json({
+        error: 'Account disabled',
+        message: 'Your account has been disabled. Please contact your administrator.',
+      });
+    }
+
     // Verify password
     const isValid = await UserModel.verifyPassword(password, user.password_hash);
     if (!isValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    // Generate JWT
-    const payload: JWTPayload = { userId: user.id, email: user.email };
+    // Generate JWT with organization and role info
+    const payload: JWTPayload & {
+      organizationId?: string;
+      role?: string;
+    } = {
+      userId: user.id,
+      email: user.email,
+      organizationId: user.organization_id || undefined,
+      role: user.role || undefined,
+    };
+
     const secret = process.env.JWT_SECRET || 'default_secret';
     const token = jwt.sign(payload, secret, { expiresIn: '7d' });
 
@@ -71,7 +98,11 @@ export const login = async (req: Request, res: Response) => {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name,
+        name: user.full_name || user.name,
+        full_name: user.full_name,
+        role: user.role,
+        organization_id: user.organization_id,
+        is_active: user.is_active,
       },
     });
   } catch (error: any) {
