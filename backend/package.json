@@ -8,7 +8,8 @@
     "dev": "nodemon --exec ts-node src/index.ts",
     "build": "tsc",
     "worker": "node dist/workers/index.js",
-    "migrate": "node dist/config/migrate.js"
+    "migrate": "node dist/config/migrate.js",
+    "seed-admin": "ts-node src/scripts/seed-admin.ts"
   },
   "dependencies": {
     "@azure/ai-form-recognizer": "^5.0.0",
