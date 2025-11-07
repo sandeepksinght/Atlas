@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import * as adminApi from '../../services/adminApi';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 
 interface Organization {
   id: string;
@@ -108,25 +109,29 @@ const DStudioAdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-3xl font-black text-gray-900">dStudio Admin</h1>
-              <p className="text-gray-600 mt-1">System Administration Dashboard</p>
+      <AdminSidebar />
+
+      {/* Main Content with left margin for sidebar */}
+      <div className="ml-64">
+        {/* Header */}
+        <div className="bg-white shadow">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h1 className="text-3xl font-black text-gray-900">dStudio Admin</h1>
+                <p className="text-gray-600 mt-1">System Administration Dashboard</p>
+              </div>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold"
+              >
+                + Create Organization
+              </button>
             </div>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-bold"
-            >
-              + Create Organization
-            </button>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
@@ -284,6 +289,7 @@ const DStudioAdminDashboard: React.FC = () => {
               </button>
             </div>
           )}
+        </div>
         </div>
       </div>
 
