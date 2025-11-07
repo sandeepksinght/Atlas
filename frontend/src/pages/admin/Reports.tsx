@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as adminApi from '../../services/adminApi';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 
 interface ReportData {
   users: {
@@ -106,25 +107,21 @@ const Reports: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
+      <AdminSidebar />
+
+      {/* Main Content with left margin for sidebar */}
+      <div className="ml-64">
+        {/* Header */}
+        <div className="bg-white shadow">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div>
               <h1 className="text-3xl font-black text-gray-900">Reports & Analytics</h1>
               <p className="text-gray-600 mt-1">Organization insights and statistics</p>
             </div>
-            <Link
-              to="/admin/dashboard"
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
-            >
-              ← Back to Dashboard
-            </Link>
           </div>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Date Range Selector */}
         <div className="mb-6 flex justify-end">
           <select
@@ -364,6 +361,7 @@ const Reports: React.FC = () => {
               )}
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
