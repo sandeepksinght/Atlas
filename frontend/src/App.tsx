@@ -42,6 +42,7 @@ import OrgAdminDashboard from './pages/admin/OrgAdminDashboard';
 import TeamManagement from './pages/admin/TeamManagement';
 import BackupManagement from './pages/admin/BackupManagement';
 import AuditLogs from './pages/admin/AuditLogs';
+import SystemAuditLogs from './pages/admin/SystemAuditLogs';
 import Reports from './pages/admin/Reports';
 
 // Layout wrapper with sidebar for authenticated routes
@@ -229,6 +230,15 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <DStudioAdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/admin/system/audit-logs"
+              element={
+                <ProtectedRoute>
+                  <SystemAuditLogs />
                 </ProtectedRoute>
               }
             />

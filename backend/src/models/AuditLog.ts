@@ -262,3 +262,94 @@ export const getImpersonationLogs = async (
   );
   return result.rows;
 };
+
+/**
+ * Get system-wide audit logs across all organizations (for DStudio admins)
+ */
+export const getSystemAuditLogs = async (
+  filters: {
+    organizationId?: string;
+    userId?: string;
+    action?: AuditAction;
+    resourceType?: string;
+    startDate?: Date;
+    endDate?: Date;
+    limit?: number;
+    offset?: number;
+  } = {}
+): Promise<{ logs: any[]; total: number }> => {
+  const conditions: string[] = [];
+  const params: any[] = [];
+  let paramIndex = 1;
+
+  // Optional organization filter
+  if (filters.organizationId) {
+    conditions.push(`al.organization_id = $${paramIndex}`);
+    params.push(filters.organizationId);
+    paramIndex++;
+  }
+
+  if (filters.userId) {
+    conditions.push(`al.user_id = $${paramIndex}`);
+    params.push(filters.userId);
+    paramIndex++;
+  }
+
+  if (filters.action) {
+    conditions.push(`al.action = $${paramIndex}`);
+    params.push(filters.action);
+    paramIndex++;
+  }
+
+  if (filters.resourceType) {
+    conditions.push(`al.resource_type = $${paramIndex}`);
+    params.push(filters.resourceType);
+    paramIndex++;
+  }
+
+  if (filters.startDate) {
+    conditions.push(`al.created_at >= $${paramIndex}`);
+    params.push(filters.startDate);
+    paramIndex++;
+  }
+
+  if (filters.endDate) {
+    conditions.push(`al.created_at <= $${paramIndex}`);
+    params.push(filters.endDate);
+    paramIndex++;
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  // Get total count
+  const countResult = await query(
+    `SELECT COUNT(*) as total FROM audit_logs al ${whereClause}`,
+    params
+  );
+  const total = parseInt(countResult.rows[0].total);
+
+  // Get logs with pagination, including org info and user info
+  const limit = filters.limit || 50;
+  const offset = filters.offset || 0;
+
+  const logsResult = await query(
+    `SELECT al.*,
+            u.email as user_email,
+            u.full_name as user_name,
+            admin.email as impersonated_by_email,
+            o.name as organization_name
+     FROM audit_logs al
+     LEFT JOIN users u ON al.user_id = u.id
+     LEFT JOIN users admin ON al.impersonated_by = admin.id
+     LEFT JOIN organizations o ON al.organization_id = o.id
+     ${whereClause}
+     ORDER BY al.created_at DESC
+     LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`,
+    [...params, limit, offset]
+  );
+
+  return {
+    logs: logsResult.rows,
+    total,
+  };
+};

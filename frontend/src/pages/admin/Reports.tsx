@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as adminApi from '../../services/adminApi';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import { useOrganization } from '../../context/OrganizationContext';
 
 interface ReportData {
   users: {
@@ -50,18 +51,25 @@ interface ReportData {
 }
 
 const Reports: React.FC = () => {
+  const { selectedOrganization, canSwitchContext } = useOrganization();
   const [data, setData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('30'); // days
 
   useEffect(() => {
     loadReports();
-  }, [dateRange]);
+  }, [dateRange, selectedOrganization]);
 
   const loadReports = async () => {
+    // Don't load if DStudio admin without org selected
+    if (canSwitchContext && !selectedOrganization) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await adminApi.getReports(parseInt(dateRange));
+      const response = await adminApi.getReports(parseInt(dateRange), selectedOrganization?.id);
       setData(response.data);
     } catch (error: any) {
       toast.error('Failed to load reports');
@@ -85,6 +93,31 @@ const Reports: React.FC = () => {
     const growth = ((current - previous) / previous) * 100;
     return `${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`;
   };
+
+  // Show message for DStudio admins without org context
+  if (canSwitchContext && !selectedOrganization) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AdminSidebar />
+        <div className="ml-64 flex items-center justify-center h-screen">
+          <div className="text-center max-w-md">
+            <div className="text-6xl mb-4">📈</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Select an Organization
+            </h2>
+            <p className="text-gray-600 mb-6">
+              To view reports, please select an organization from the dropdown in the sidebar.
+            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+              <p className="text-sm text-blue-800">
+                <strong>Tip:</strong> Use the "Current Context" dropdown at the top of the sidebar to select which organization's reports you want to view.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

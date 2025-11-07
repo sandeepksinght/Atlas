@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as adminApi from '../../services/adminApi';
 import AdminSidebar from '../../components/admin/AdminSidebar';
-import { useOrganization } from '../../context/OrganizationContext';
 
 interface AuditLog {
   id: string;
@@ -16,16 +15,18 @@ interface AuditLog {
   user_agent: string | null;
   impersonated_by: string | null;
   impersonated_by_email: string | null;
+  organization_id: string | null;
+  organization_name: string | null;
   created_at: string;
 }
 
-const AuditLogs: React.FC = () => {
-  const { selectedOrganization, canSwitchContext } = useOrganization();
+const SystemAuditLogs: React.FC = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [filters, setFilters] = useState({
+    organizationId: '',
     userId: '',
     action: '',
     startDate: '',
@@ -34,30 +35,24 @@ const AuditLogs: React.FC = () => {
 
   useEffect(() => {
     loadAuditLogs();
-  }, [page, filters, selectedOrganization]);
+  }, [page, filters]);
 
   const loadAuditLogs = async () => {
-    // Don't load if DStudio admin without org selected
-    if (canSwitchContext && !selectedOrganization) {
-      setLoading(false);
-      return;
-    }
-
     try {
       setLoading(true);
-      const response = await adminApi.getAuditLogs({
+      const response = await adminApi.getSystemAuditLogs({
         page,
         limit: 50,
+        organizationId: filters.organizationId || undefined,
         userId: filters.userId || undefined,
         action: filters.action || undefined,
         startDate: filters.startDate || undefined,
         endDate: filters.endDate || undefined,
-        organizationId: selectedOrganization?.id,
       });
       setLogs(response.data.logs);
       setTotalPages(Math.ceil(response.data.total / 50));
     } catch (error: any) {
-      toast.error('Failed to load audit logs');
+      toast.error('Failed to load system audit logs');
       console.error(error);
     } finally {
       setLoading(false);
@@ -71,6 +66,7 @@ const AuditLogs: React.FC = () => {
 
   const handleClearFilters = () => {
     setFilters({
+      organizationId: '',
       userId: '',
       action: '',
       startDate: '',
@@ -95,6 +91,10 @@ const AuditLogs: React.FC = () => {
       logout: 'Logged Out',
       impersonation_started: 'Started Impersonation',
       impersonation_ended: 'Ended Impersonation',
+      organization_created: 'Created Organization',
+      organization_updated: 'Updated Organization',
+      organization_deactivated: 'Deactivated Organization',
+      organization_activated: 'Activated Organization',
     };
 
     return actionMap[action] || action.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
@@ -103,44 +103,20 @@ const AuditLogs: React.FC = () => {
   const getActionColor = (action: string): string => {
     if (action.includes('created')) return 'bg-green-100 text-green-800';
     if (action.includes('updated')) return 'bg-blue-100 text-blue-800';
-    if (action.includes('deleted')) return 'bg-red-100 text-red-800';
+    if (action.includes('deleted') || action.includes('deactivated')) return 'bg-red-100 text-red-800';
     if (action.includes('impersonation')) return 'bg-orange-100 text-orange-800';
     if (action.includes('backup')) return 'bg-purple-100 text-purple-800';
     if (action.includes('login') || action.includes('logout')) return 'bg-gray-100 text-gray-800';
+    if (action.includes('organization')) return 'bg-indigo-100 text-indigo-800';
     return 'bg-gray-100 text-gray-800';
   };
-
-  // Show message for DStudio admins without org context
-  if (canSwitchContext && !selectedOrganization) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <AdminSidebar />
-        <div className="ml-64 flex items-center justify-center h-screen">
-          <div className="text-center max-w-md">
-            <div className="text-6xl mb-4">📋</div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Select an Organization
-            </h2>
-            <p className="text-gray-600 mb-6">
-              To view audit logs, please select an organization from the dropdown in the sidebar.
-            </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
-              <p className="text-sm text-blue-800">
-                <strong>Tip:</strong> Use the "Current Context" dropdown at the top of the sidebar to select which organization's audit logs you want to view.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   if (loading && page === 1) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading audit logs...</p>
+          <p className="mt-4 text-gray-600">Loading system audit logs...</p>
         </div>
       </div>
     );
@@ -156,17 +132,37 @@ const AuditLogs: React.FC = () => {
         <div className="bg-white shadow">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <div>
-              <h1 className="text-3xl font-black text-gray-900">Audit Logs</h1>
-              <p className="text-gray-600 mt-1">Track all actions and changes in your organization</p>
+              <h1 className="text-3xl font-black text-gray-900">System Audit Logs</h1>
+              <p className="text-gray-600 mt-1">Track all actions and changes across all organizations</p>
             </div>
           </div>
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Info Box */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+          <p className="text-sm text-blue-800">
+            <strong>System View:</strong> You are viewing audit logs from all organizations. Use filters to narrow down results.
+          </p>
+        </div>
+
         {/* Filters */}
         <div className="bg-white rounded-lg shadow p-6 mb-6">
           <h2 className="text-lg font-bold text-gray-900 mb-4">Filters</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Organization
+              </label>
+              <input
+                type="text"
+                value={filters.organizationId}
+                onChange={(e) => handleFilterChange('organizationId', e.target.value)}
+                placeholder="Organization ID"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Action Type
@@ -177,20 +173,32 @@ const AuditLogs: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               >
                 <option value="">All Actions</option>
-                <option value="user_created">User Created</option>
-                <option value="user_updated">User Updated</option>
-                <option value="user_deleted">User Deleted</option>
-                <option value="password_reset">Password Reset</option>
-                <option value="assessment_created">Assessment Created</option>
-                <option value="assessment_updated">Assessment Updated</option>
-                <option value="assessment_deleted">Assessment Deleted</option>
-                <option value="assessment_published">Assessment Published</option>
-                <option value="backup_created">Backup Created</option>
-                <option value="backup_restored">Backup Restored</option>
-                <option value="impersonation_started">Impersonation Started</option>
-                <option value="impersonation_ended">Impersonation Ended</option>
-                <option value="login">Login</option>
-                <option value="logout">Logout</option>
+                <optgroup label="User Actions">
+                  <option value="user_created">User Created</option>
+                  <option value="user_updated">User Updated</option>
+                  <option value="user_deleted">User Deleted</option>
+                  <option value="password_reset">Password Reset</option>
+                </optgroup>
+                <optgroup label="Assessment Actions">
+                  <option value="assessment_created">Assessment Created</option>
+                  <option value="assessment_updated">Assessment Updated</option>
+                  <option value="assessment_deleted">Assessment Deleted</option>
+                  <option value="assessment_published">Assessment Published</option>
+                </optgroup>
+                <optgroup label="Organization Actions">
+                  <option value="organization_created">Organization Created</option>
+                  <option value="organization_updated">Organization Updated</option>
+                  <option value="organization_activated">Organization Activated</option>
+                  <option value="organization_deactivated">Organization Deactivated</option>
+                </optgroup>
+                <optgroup label="System Actions">
+                  <option value="backup_created">Backup Created</option>
+                  <option value="backup_restored">Backup Restored</option>
+                  <option value="impersonation_started">Impersonation Started</option>
+                  <option value="impersonation_ended">Impersonation Ended</option>
+                  <option value="login">Login</option>
+                  <option value="logout">Logout</option>
+                </optgroup>
               </select>
             </div>
 
@@ -239,6 +247,9 @@ const AuditLogs: React.FC = () => {
                     Timestamp
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Organization
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     User
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -260,6 +271,14 @@ const AuditLogs: React.FC = () => {
                   <tr key={log.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {new Date(log.created_at).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900 font-medium">
+                        {log.organization_name || 'System'}
+                      </div>
+                      {log.organization_id && (
+                        <div className="text-xs text-gray-500">{log.organization_id.substring(0, 8)}...</div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">{log.user_email}</div>
@@ -302,11 +321,11 @@ const AuditLogs: React.FC = () => {
             {logs.length === 0 && (
               <div className="text-center py-12">
                 <div className="text-6xl mb-4">📋</div>
-                <p className="text-gray-500 mb-2">No audit logs found</p>
+                <p className="text-gray-500 mb-2">No system audit logs found</p>
                 <p className="text-sm text-gray-400">
-                  {filters.action || filters.startDate || filters.endDate
+                  {filters.action || filters.startDate || filters.endDate || filters.organizationId
                     ? 'Try adjusting your filters'
-                    : 'Actions will appear here as they occur'}
+                    : 'System actions will appear here as they occur'}
                 </p>
               </div>
             )}
@@ -366,4 +385,4 @@ const AuditLogs: React.FC = () => {
   );
 };
 
-export default AuditLogs;
+export default SystemAuditLogs;

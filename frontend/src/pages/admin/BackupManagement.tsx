@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as adminApi from '../../services/adminApi';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import { useOrganization } from '../../context/OrganizationContext';
 
 interface Backup {
   id: string;
@@ -15,6 +16,7 @@ interface Backup {
 }
 
 const BackupManagement: React.FC = () => {
+  const { selectedOrganization, canSwitchContext } = useOrganization();
   const [backups, setBackups] = useState<Backup[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -23,12 +25,18 @@ const BackupManagement: React.FC = () => {
 
   useEffect(() => {
     loadBackups();
-  }, []);
+  }, [selectedOrganization]);
 
   const loadBackups = async () => {
+    // Don't load if DStudio admin without org selected
+    if (canSwitchContext && !selectedOrganization) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await adminApi.getBackups();
+      const response = await adminApi.getBackups(1, 50, selectedOrganization?.id);
       setBackups(response.data.backups);
     } catch (error: any) {
       toast.error('Failed to load backups');
@@ -88,6 +96,31 @@ const BackupManagement: React.FC = () => {
     if (mb >= 1) return `${mb.toFixed(2)} MB`;
     return `${kb.toFixed(2)} KB`;
   };
+
+  // Show message for DStudio admins without org context
+  if (canSwitchContext && !selectedOrganization) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AdminSidebar />
+        <div className="ml-64 flex items-center justify-center h-screen">
+          <div className="text-center max-w-md">
+            <div className="text-6xl mb-4">💾</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Select an Organization
+            </h2>
+            <p className="text-gray-600 mb-6">
+              To manage backups, please select an organization from the dropdown in the sidebar.
+            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+              <p className="text-sm text-blue-800">
+                <strong>Tip:</strong> Use the "Current Context" dropdown at the top of the sidebar to select which organization you want to manage.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

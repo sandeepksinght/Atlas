@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as adminApi from '../../services/adminApi';
 import AdminSidebar from '../../components/admin/AdminSidebar';
+import { useOrganization } from '../../context/OrganizationContext';
 
 interface DashboardData {
   organization: any;
@@ -12,17 +13,24 @@ interface DashboardData {
 }
 
 const OrgAdminDashboard: React.FC = () => {
+  const { selectedOrganization, canSwitchContext } = useOrganization();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadDashboard();
-  }, []);
+  }, [selectedOrganization]);
 
   const loadDashboard = async () => {
+    // Don't load if DStudio admin without org selected
+    if (canSwitchContext && !selectedOrganization) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      const response = await adminApi.getOrgDashboard();
+      const response = await adminApi.getOrgDashboard(selectedOrganization?.id);
       setData(response.data);
     } catch (error: any) {
       toast.error('Failed to load dashboard');
@@ -31,6 +39,31 @@ const OrgAdminDashboard: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Show message for DStudio admins without org context
+  if (canSwitchContext && !selectedOrganization) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <AdminSidebar />
+        <div className="ml-64 flex items-center justify-center h-screen">
+          <div className="text-center max-w-md">
+            <div className="text-6xl mb-4">📊</div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Select an Organization
+            </h2>
+            <p className="text-gray-600 mb-6">
+              To view the organization dashboard, please select an organization from the dropdown in the sidebar.
+            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+              <p className="text-sm text-blue-800">
+                <strong>Tip:</strong> Use the "Current Context" dropdown at the top of the sidebar to select which organization's dashboard you want to view.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

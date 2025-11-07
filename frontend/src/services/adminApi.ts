@@ -146,6 +146,19 @@ export const getAuditLogs = (filters?: {
 }) => api.get('/api/admin/audit-logs', { params: filters });
 
 /**
+ * Get system audit logs (DStudio admins only)
+ */
+export const getSystemAuditLogs = (filters?: {
+  page?: number;
+  limit?: number;
+  organizationId?: string;
+  userId?: string;
+  action?: string;
+  startDate?: string;
+  endDate?: string;
+}) => api.get('/api/admin/system/audit-logs', { params: filters });
+
+/**
  * Get organization reports
  */
 export const getReports = (dateRange?: number, organizationId?: string) =>

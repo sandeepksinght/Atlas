@@ -305,15 +305,28 @@ export const getSystemAuditLogs = async (req: AuthRequest, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 50;
     const offset = (page - 1) * limit;
 
-    // This would need a new model function to get cross-org audit logs
-    // For now, return placeholder
+    const filters: any = {
+      limit,
+      offset,
+    };
+
+    if (req.query.organizationId) filters.organizationId = req.query.organizationId as string;
+    if (req.query.userId) filters.userId = req.query.userId as string;
+    if (req.query.action) filters.action = req.query.action as string;
+    if (req.query.resourceType) filters.resourceType = req.query.resourceType as string;
+    if (req.query.startDate) filters.startDate = new Date(req.query.startDate as string);
+    if (req.query.endDate) filters.endDate = new Date(req.query.endDate as string);
+
+    const result = await AuditLogModel.getSystemAuditLogs(filters);
+
     res.json({
-      logs: [],
+      logs: result.logs,
+      total: result.total,
       pagination: {
-        total: 0,
+        total: result.total,
         page,
         limit,
-        totalPages: 0,
+        totalPages: Math.ceil(result.total / limit),
       },
     });
   } catch (error: any) {
