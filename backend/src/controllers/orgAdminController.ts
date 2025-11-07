@@ -550,24 +550,135 @@ export const getAuditLogs = async (req: AuthRequest, res: Response) => {
 export const getReports = async (req: AuthRequest, res: Response) => {
   try {
     const organizationId = req.user!.organizationId!;
+    const dateRange = parseInt(req.query.dateRange as string) || 30;
 
-    const stats = await OrganizationModel.getOrganizationStats(organizationId);
+    // Calculate date ranges
+    const now = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - dateRange);
+
+    // Get user statistics
     const userStats = await UserModel.getUserStatistics(organizationId);
+    const usersResult = await query(
+      `SELECT COUNT(*) FILTER (WHERE created_at >= $1) as recent_count
+       FROM users WHERE organization_id = $2`,
+      [startDate, organizationId]
+    );
 
-    // Get activity stats for last 30 days
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // Get role breakdown
+    const roleStats = userStats.usersByRole.reduce((acc: any, r: any) => {
+      acc[r.role] = parseInt(r.count);
+      return acc;
+    }, {});
 
-    const auditStats = await AuditLogModel.getAuditStatistics(
-      organizationId,
-      thirtyDaysAgo,
-      new Date()
+    // Get assessment statistics
+    const assessmentStats = await query(
+      `SELECT
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE status = 'published') as published,
+        COUNT(*) FILTER (WHERE status = 'draft') as draft,
+        COUNT(*) FILTER (WHERE created_at >= $1) as recent_count
+       FROM assessments WHERE organization_id = $2`,
+      [startDate, organizationId]
+    );
+
+    // Get response statistics
+    const responseStats = await query(
+      `SELECT
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE DATE_TRUNC('month', r.created_at) = DATE_TRUNC('month', CURRENT_DATE)) as this_month,
+        COUNT(*) FILTER (WHERE DATE_TRUNC('month', r.created_at) = DATE_TRUNC('month', CURRENT_DATE - INTERVAL '1 month')) as last_month
+       FROM responses r
+       JOIN assessments a ON r.assessment_id = a.id
+       WHERE a.organization_id = $1`,
+      [organizationId]
+    );
+
+    // Calculate average responses per assessment
+    const avgResponses = parseInt(assessmentStats.rows[0].total) > 0
+      ? parseInt(responseStats.rows[0].total) / parseInt(assessmentStats.rows[0].total)
+      : 0;
+
+    // Get activity statistics
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const twoWeeksAgo = new Date();
+    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+
+    const activityStats = await query(
+      `SELECT
+        COUNT(*) as total,
+        COUNT(*) FILTER (WHERE created_at >= $1) as this_week,
+        COUNT(*) FILTER (WHERE created_at >= $2 AND created_at < $1) as last_week
+       FROM audit_logs WHERE organization_id = $3`,
+      [weekAgo, twoWeeksAgo, organizationId]
+    );
+
+    // Get most active users
+    const mostActiveUsers = await query(
+      `SELECT u.email, u.full_name, COUNT(al.id) as action_count
+       FROM users u
+       JOIN audit_logs al ON al.user_id = u.id
+       WHERE u.organization_id = $1 AND al.created_at >= $2
+       GROUP BY u.id, u.email, u.full_name
+       ORDER BY action_count DESC
+       LIMIT 10`,
+      [organizationId, startDate]
+    );
+
+    // Get backup statistics
+    const backupStats = await query(
+      `SELECT
+        COUNT(*) as total,
+        COALESCE(SUM(data_size), 0) as total_size,
+        MAX(created_at) as last_backup
+       FROM backups WHERE organization_id = $1`,
+      [organizationId]
     );
 
     res.json({
-      organization: stats,
-      users: userStats,
-      activity: auditStats,
+      users: {
+        total: userStats.totalUsers,
+        active: userStats.activeUsers,
+        inactive: userStats.inactiveUsers,
+        byRole: {
+          org_admin: roleStats.org_admin || 0,
+          org_member: roleStats.org_member || 0,
+        },
+        recentlyCreated: parseInt(usersResult.rows[0].recent_count) || 0,
+      },
+      assessments: {
+        total: parseInt(assessmentStats.rows[0].total) || 0,
+        byType: {
+          survey: 0, // TODO: Add type tracking to assessments
+          quiz: 0,
+          poll: 0,
+        },
+        published: parseInt(assessmentStats.rows[0].published) || 0,
+        draft: parseInt(assessmentStats.rows[0].draft) || 0,
+        recentlyCreated: parseInt(assessmentStats.rows[0].recent_count) || 0,
+      },
+      responses: {
+        total: parseInt(responseStats.rows[0].total) || 0,
+        thisMonth: parseInt(responseStats.rows[0].this_month) || 0,
+        lastMonth: parseInt(responseStats.rows[0].last_month) || 0,
+        averagePerAssessment: avgResponses,
+      },
+      activity: {
+        totalActions: parseInt(activityStats.rows[0].total) || 0,
+        thisWeek: parseInt(activityStats.rows[0].this_week) || 0,
+        lastWeek: parseInt(activityStats.rows[0].last_week) || 0,
+        mostActiveUsers: mostActiveUsers.rows.map((u: any) => ({
+          email: u.email,
+          full_name: u.full_name || u.email,
+          actionCount: parseInt(u.action_count),
+        })),
+      },
+      storage: {
+        totalBackups: parseInt(backupStats.rows[0].total) || 0,
+        totalBackupSize: parseInt(backupStats.rows[0].total_size) || 0,
+        lastBackupDate: backupStats.rows[0].last_backup,
+      },
     });
   } catch (error: any) {
     console.error('Get reports error:', error);

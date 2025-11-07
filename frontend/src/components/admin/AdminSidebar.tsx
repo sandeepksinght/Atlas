@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import api from '../../services/api';
 
 interface NavItem {
   name: string;
@@ -7,16 +8,46 @@ interface NavItem {
   icon: string;
 }
 
+interface User {
+  role: string;
+  organizationId: string | null;
+}
+
 const AdminSidebar: React.FC = () => {
   const location = useLocation();
+  const [user, setUser] = useState<User | null>(null);
 
-  const navItems: NavItem[] = [
+  useEffect(() => {
+    // Get user info from localStorage or API
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+      } catch (e) {
+        console.error('Failed to parse user data:', e);
+      }
+    }
+  }, []);
+
+  // Define navigation items based on user role
+  const getDStudioNavItems = (): NavItem[] => [
+    { name: 'Organizations', path: '/admin/dstudio-dashboard', icon: '🏢' },
+    { name: 'System Audit Logs', path: '/admin/system/audit-logs', icon: '📋' },
+  ];
+
+  const getOrgAdminNavItems = (): NavItem[] => [
     { name: 'Dashboard', path: '/admin/dashboard', icon: '📊' },
     { name: 'Team Members', path: '/admin/team', icon: '👥' },
     { name: 'Backups', path: '/admin/backups', icon: '💾' },
     { name: 'Audit Logs', path: '/admin/audit-logs', icon: '📋' },
     { name: 'Reports', path: '/admin/reports', icon: '📈' },
   ];
+
+  // Determine which nav items to show
+  const navItems = user?.role === 'dstudio_admin' && !user?.organizationId
+    ? getDStudioNavItems()
+    : getOrgAdminNavItems();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -27,7 +58,11 @@ const AdminSidebar: React.FC = () => {
       {/* Logo/Header */}
       <div className="p-6 border-b border-gray-200">
         <h2 className="text-2xl font-black text-purple-600">Admin Portal</h2>
-        <p className="text-sm text-gray-600 mt-1">Organization Management</p>
+        <p className="text-sm text-gray-600 mt-1">
+          {user?.role === 'dstudio_admin' && !user?.organizationId
+            ? 'System Administration'
+            : 'Organization Management'}
+        </p>
       </div>
 
       {/* Navigation */}

@@ -146,4 +146,5 @@ export const getAuditLogs = (filters?: {
 /**
  * Get organization reports
  */
-export const getOrgReports = () => api.get('/api/admin/reports');
+export const getReports = (dateRange?: number) =>
+  api.get('/api/admin/reports', { params: { dateRange } });
