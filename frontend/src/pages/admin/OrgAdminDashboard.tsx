@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import * as adminApi from '../../services/adminApi';
+import AdminSidebar from '../../components/admin/AdminSidebar';
 
 interface DashboardData {
   organization: any;
@@ -54,15 +55,19 @@ const OrgAdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-black text-gray-900">{organization.name}</h1>
-          <p className="text-gray-600 mt-1">Organization Administration Dashboard</p>
-        </div>
-      </div>
+      <AdminSidebar />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Content with left margin for sidebar */}
+      <div className="ml-64">
+        {/* Header */}
+        <div className="bg-white shadow">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <h1 className="text-3xl font-black text-gray-900">{organization.name}</h1>
+            <p className="text-gray-600 mt-1">Organization Administration Dashboard</p>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
           <Link
@@ -252,6 +257,7 @@ const OrgAdminDashboard: React.FC = () => {
               </p>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
